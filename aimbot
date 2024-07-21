@@ -6,9 +6,5 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Button1 = "OK"
 })
 
--- Load the ESP script from the external URL
+loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Aimbot"))()
 loadstring(game:HttpGet('https://raw.githubusercontent.com/Lucasfin000/SpaceHub/main/UESP'))()
-
-Wait(2)
-
-loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Aimbot'))()
