@@ -1,0 +1,68 @@
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local camera = game.Workspace.CurrentCamera
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
+local isLocking = false
+
+-- Function to get the closest player to the mouse position
+local function getClosestPlayerToMouse()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+    
+    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local humanoidRootPart = otherPlayer.Character.HumanoidRootPart
+            local head = otherPlayer.Character.Head
+            local screenPoint = camera:WorldToScreenPoint(head.Position)
+            local mousePos = Vector2.new(mouse.X, mouse.Y)
+            local distance = (Vector2.new(screenPoint.X, screenPoint.Y) - mousePos).magnitude
+            
+            if screenPoint.Z > 0 and screenPoint.X >= 0 and screenPoint.X <= camera.ViewportSize.X and screenPoint.Y >= 0 and screenPoint.Y <= camera.ViewportSize.Y then
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    closestPlayer = otherPlayer
+                end
+            end
+        end
+    end
+    
+    return closestPlayer
+end
+
+-- Function to update the camera's orientation to look at the closest player
+local function updateCamera()
+    local closestPlayer = getClosestPlayerToMouse()
+    
+    if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPosition = closestPlayer.Character.HumanoidRootPart.Position
+        camera.CFrame = CFrame.new(camera.CFrame.Position, targetPosition)
+    end
+end
+
+-- Function to lock the mouse
+local function lockMouse()
+    userInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+end
+
+-- Function to unlock the mouse
+local function unlockMouse()
+    userInputService.MouseBehavior = Enum.MouseBehavior.Default
+end
+
+-- Handle mouse input and camera updates
+mouse.Button2Down:Connect(function()
+    isLocking = true
+    lockMouse()
+end)
+
+mouse.Button2Up:Connect(function()
+    isLocking = false
+    unlockMouse()
+end)
+
+runService.RenderStepped:Connect(function()
+    if isLocking then
+        updateCamera()
+    end
+end)
