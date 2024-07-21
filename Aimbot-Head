@@ -15,6 +15,7 @@ local function getClosestPlayerToMouse()
     for _, otherPlayer in pairs(game.Players:GetPlayers()) do
         if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Head") then
             local humanoidRootPart = otherPlayer.Character.HumanoidRootPart
+            local Head = otherPlayer.Character.Head
             local screenPoint = camera:WorldToScreenPoint(Head.Position)
             local mousePos = Vector2.new(mouse.X, mouse.Y)
             local distance = (Vector2.new(screenPoint.X, screenPoint.Y) - mousePos).magnitude
