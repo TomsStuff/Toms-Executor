@@ -1,0 +1,10 @@
+-- Display a notification to the user
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Tom's ESP + Aimbot",
+    Text = "Successfully Loaded!",
+    Duration = 5,  -- Notification will be displayed for 5 seconds
+    Button1 = "OK"
+})
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/AimbotBodyTesting"))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/Lucasfin000/SpaceHub/main/UESP'))()
