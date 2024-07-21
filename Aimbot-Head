@@ -34,7 +34,7 @@ local function updateCamera()
     local closestPlayer = getClosestPlayerToMouse()
     
     if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild("Head") then
-        local targetPosition = closestPlayer.Character.HumanoidRootPart.Position
+        local targetPosition = closestPlayer.Character.Head.Position
         camera.CFrame = CFrame.new(camera.CFrame.Position, targetPosition)
     end
 end
