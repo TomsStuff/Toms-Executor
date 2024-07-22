@@ -4,21 +4,22 @@ local camera = game.Workspace.CurrentCamera
 local runService = game:GetService("RunService")
 local userInputService = game:GetService("UserInputService")
 
-local isLockingEnabled = false
-local isScriptEnabled = true  -- Variable to track if the script is enabled
+local isLocking = false
+local isScriptActive = true  -- New variable to manage the script's state
 
 -- Function to get the closest player to the mouse position
 local function getClosestPlayerToMouse()
     local closestPlayer = nil
     local shortestDistance = math.huge
-
+    
     for _, otherPlayer in pairs(game.Players:GetPlayers()) do
         if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Head") then
+            local humanoidRootPart = otherPlayer.Character.HumanoidRootPart
             local head = otherPlayer.Character.Head
             local screenPoint = camera:WorldToScreenPoint(head.Position)
             local mousePos = Vector2.new(mouse.X, mouse.Y)
             local distance = (Vector2.new(screenPoint.X, screenPoint.Y) - mousePos).magnitude
-
+            
             if screenPoint.Z > 0 and screenPoint.X >= 0 and screenPoint.X <= camera.ViewportSize.X and screenPoint.Y >= 0 and screenPoint.Y <= camera.ViewportSize.Y then
                 if distance < shortestDistance then
                     shortestDistance = distance
@@ -27,24 +28,17 @@ local function getClosestPlayerToMouse()
             end
         end
     end
-
+    
     return closestPlayer
 end
 
 -- Function to update the camera's orientation to look at the closest player
 local function updateCamera()
-    if isScriptEnabled and isLockingEnabled then
-        local closestPlayer = getClosestPlayerToMouse()
-
-        if closestPlayer then
-            print("Closest Player Found: " .. closestPlayer.Name)
-            if closestPlayer.Character and closestPlayer.Character:FindFirstChild("Head") then
-                local targetPosition = closestPlayer.Character.Head.Position
-                camera.CFrame = CFrame.new(camera.CFrame.Position, targetPosition)
-            end
-        else
-            print("No Closest Player Found")
-        end
+    local closestPlayer = getClosestPlayerToMouse()
+    
+    if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild("Head") then
+        local targetPosition = closestPlayer.Character.Head.Position
+        camera.CFrame = CFrame.new(camera.CFrame.Position, targetPosition)
     end
 end
 
@@ -58,54 +52,37 @@ local function unlockMouse()
     userInputService.MouseBehavior = Enum.MouseBehavior.Default
 end
 
--- Function to toggle locking
-local function toggleLocking()
-    if isScriptEnabled then  -- Ensure locking only works if the script is enabled
-        if isLockingEnabled then
-            unlockMouse()
-            isLockingEnabled = false
-            print("Locking Disabled")
-        else
-            lockMouse()
-            isLockingEnabled = true
-            print("Locking Enabled")
-        end
-    end
-end
-
--- Function to toggle script functionality
-local function toggleScript()
-    isScriptEnabled = not isScriptEnabled
-    if isScriptEnabled then
-        print("Script Enabled")
-    else
-        unlockMouse()  -- Ensure mouse is unlocked if script is disabled
-        print("Script Disabled")
-    end
-end
-
--- Handle mouse button events for locking
-userInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and isScriptEnabled then
-        if input.UserInputType == Enum.UserInputType.MouseButton2 then  -- Right Mouse Button
-            lockMouse()
-            isLockingEnabled = true
-        elseif input.KeyCode == Enum.KeyCode.L then
-            toggleScript()
-        end
+-- Handle mouse input and camera updates
+mouse.Button2Down:Connect(function()
+    if isScriptActive then
+        isLocking = true
+        lockMouse()
     end
 end)
 
-userInputService.InputEnded:Connect(function(input)
-    if isScriptEnabled and input.UserInputType == Enum.UserInputType.MouseButton2 then
+mouse.Button2Up:Connect(function()
+    if isScriptActive then
+        isLocking = false
         unlockMouse()
-        isLockingEnabled = false
     end
 end)
 
--- Update camera orientation in each frame
 runService.RenderStepped:Connect(function()
-    if isScriptEnabled then
+    if isScriptActive and isLocking then
         updateCamera()
+    end
+end)
+
+-- Keybind for toggling the script on and off
+local toggleKey = Enum.KeyCode.L -- You can change this to any key you prefer
+
+userInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent and input.KeyCode == toggleKey then
+        isScriptActive = not isScriptActive
+        if not isScriptActive then
+            -- If the script is being deactivated, unlock the mouse
+            unlockMouse()
+            isLocking = false
+        end
     end
 end)
