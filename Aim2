@@ -5,7 +5,7 @@ local runService = game:GetService("RunService")
 local userInputService = game:GetService("UserInputService")
 
 local isLockingEnabled = false
-local isScriptEnabled = true  -- New variable to track if the script is enabled
+local isScriptEnabled = true  -- Variable to track if the script is enabled
 
 -- Function to get the closest player to the mouse position
 local function getClosestPlayerToMouse()
@@ -60,13 +60,15 @@ end
 
 -- Function to toggle locking
 local function toggleLocking()
-    isLockingEnabled = not isLockingEnabled
-    if isLockingEnabled then
-        lockMouse()
-        print("Locking Enabled")
-    else
-        unlockMouse()
-        print("Locking Disabled")
+    if isScriptEnabled then  -- Ensure locking only works if the script is enabled
+        isLockingEnabled = not isLockingEnabled
+        if isLockingEnabled then
+            lockMouse()
+            print("Locking Enabled")
+        else
+            unlockMouse()
+            print("Locking Disabled")
+        end
     end
 end
 
@@ -76,6 +78,7 @@ local function toggleScript()
     if isScriptEnabled then
         print("Script Enabled")
     else
+        unlockMouse()  -- Ensure mouse is unlocked if script is disabled
         print("Script Disabled")
     end
 end
@@ -93,5 +96,7 @@ end)
 
 -- Update camera orientation in each frame
 runService.RenderStepped:Connect(function()
-    updateCamera()
+    if isScriptEnabled then
+        updateCamera()
+    end
 end)
