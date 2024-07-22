@@ -4,11 +4,14 @@ _G.UseTeamColor = true
 _G.ESPEnabled = true  -- Variable to track the ESP state
 
 local UserInputService = game:GetService("UserInputService")
+local players = game:GetService("Players")
+local plr = players.LocalPlayer
 
---------------------------------------------------------------------
+-- Create the Holder folder in CoreGui
 local Holder = Instance.new("Folder", game.CoreGui)
 Holder.Name = "ESP"
 
+-- Create the BoxHandleAdornment
 local Box = Instance.new("BoxHandleAdornment")
 Box.Name = "nilBox"
 Box.Size = Vector3.new(1, 2, 1)
@@ -18,9 +21,9 @@ Box.ZIndex = 0
 Box.AlwaysOnTop = false
 Box.Visible = false
 
+-- Create the NameTag (BillboardGui)
 local NameTag = Instance.new("BillboardGui")
 NameTag.Name = "nilNameTag"
-NameTag.Enabled = false
 NameTag.Size = UDim2.new(0, 200, 0, 50)
 NameTag.AlwaysOnTop = true
 NameTag.StudsOffset = Vector3.new(0, 1.8, 0)
@@ -37,10 +40,15 @@ Tag.Text = "nil"
 Tag.Font = Enum.Font.SourceSansBold
 Tag.TextScaled = false
 
+-- Function to load the character's ESP
 local function LoadCharacter(v)
 	repeat wait() until v.Character ~= nil
 	v.Character:WaitForChild("Humanoid")
 	local vHolder = Holder:FindFirstChild(v.Name)
+	if not vHolder then
+		vHolder = Instance.new("Folder", Holder)
+		vHolder.Name = v.Name
+	end
 	vHolder:ClearAllChildren()
 	local b = Box:Clone()
 	b.Name = v.Name .. "Box"
@@ -48,7 +56,6 @@ local function LoadCharacter(v)
 	b.Parent = vHolder
 	local t = NameTag:Clone()
 	t.Name = v.Name .. "NameTag"
-	t.Enabled = true
 	t.Parent = vHolder
 	t.Adornee = v.Character:WaitForChild("Head", 5)
 	if not t.Adornee then
@@ -71,13 +78,15 @@ local function LoadCharacter(v)
 	Update = v.Character.Humanoid.Changed:Connect(UpdateNameTag)
 end
 
+-- Function to unload the character's ESP
 local function UnloadCharacter(v)
 	local vHolder = Holder:FindFirstChild(v.Name)
-	if vHolder and (vHolder:FindFirstChild(v.Name .. "Box") ~= nil or vHolder:FindFirstChild(v.Name .. "NameTag") ~= nil) then
+	if vHolder then
 		vHolder:ClearAllChildren()
 	end
 end
 
+-- Function to load the player
 local function LoadPlayer(v)
 	local vHolder = Instance.new("Folder", Holder)
 	vHolder.Name = v.Name
@@ -97,6 +106,7 @@ local function LoadPlayer(v)
 	LoadCharacter(v)
 end
 
+-- Function to unload the player
 local function UnloadPlayer(v)
 	UnloadCharacter(v)
 	local vHolder = Holder:FindFirstChild(v.Name)
@@ -105,29 +115,31 @@ local function UnloadPlayer(v)
 	end
 end
 
-for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+-- Load existing players
+for i, v in pairs(players:GetPlayers()) do
 	spawn(function() pcall(LoadPlayer, v) end)
 end
 
-game:GetService("Players").PlayerAdded:Connect(function(v)
+-- Connect events for player added and removed
+players.PlayerAdded:Connect(function(v)
 	pcall(LoadPlayer, v)
 end)
 
-game:GetService("Players").PlayerRemoving:Connect(function(v)
+players.PlayerRemoving:Connect(function(v)
 	pcall(UnloadPlayer, v)
 end)
 
-game:GetService("Players").LocalPlayer.NameDisplayDistance = 0
+-- Disable name display distance for the local player
+players.LocalPlayer.NameDisplayDistance = 0
 
+-- Check and initialize _G.Reantheajfdfjdgs
 if _G.Reantheajfdfjdgs then
     return
 end
 
 _G.Reantheajfdfjdgs = ":suifayhgvsdghfsfkajewfrhk321rk213kjrgkhj432rj34f67df"
 
-local players = game:GetService("Players")
-local plr = players.LocalPlayer
-
+-- Function to create Highlight effect
 local function esp(target, color)
     if target.Character then
         if not target.Character:FindFirstChild("GetReal") then
@@ -144,29 +156,42 @@ local function esp(target, color)
     end
 end
 
+-- Function to toggle ESP on/off
 local function toggleESP()
     _G.ESPEnabled = not _G.ESPEnabled
     if not _G.ESPEnabled then
+        -- Remove both the Highlight and the NameTag for all players
         for _, v in pairs(players:GetPlayers()) do
-            if v.Character and v.Character:FindFirstChild("GetReal") then
-                v.Character.GetReal:Destroy()
+            if v.Character then
+                if v.Character:FindFirstChild("GetReal") then
+                    v.Character.GetReal:Destroy()
+                end
+                local vHolder = Holder:FindFirstChild(v.Name)
+                if vHolder then
+                    vHolder:ClearAllChildren()
+                end
             end
         end
     else
+        -- Add Highlight and NameTag for all players
         for _, v in pairs(players:GetPlayers()) do
             if v ~= plr then
                 esp(v, _G.UseTeamColor and v.TeamColor.Color or ((plr.TeamColor == v.TeamColor) and _G.FriendColor or _G.EnemyColor))
+                -- Recreate NameTags
+                LoadCharacter(v)  -- This will also update NameTag visibility
             end
         end
     end
 end
 
+-- Input binding for toggling ESP
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if input.KeyCode == Enum.KeyCode.K and not gameProcessed then
         toggleESP()
     end
 end)
 
+-- Continuous loop to update ESP
 while task.wait() do
     if _G.ESPEnabled then
         for i, v in pairs(players:GetPlayers()) do
