@@ -1,20 +1,11 @@
--- YARHM 1.17.2
 
-if not game:IsLoaded() then
-	game:GetService("StarterGui"):SetCore("SendNotification", {
-		Title = "Script loading",
-		Text = "Waiting for the game to finish loading!",
-		Duration = 5
-	})
-	game.Loaded:Wait(4)
-end
-		-- Instances:
 
 local Converted = {
 	["_YARHM"] = Instance.new("ScreenGui");
 	["_Open"] = Instance.new("TextButton");
 	["_UICorner"] = Instance.new("UICorner");
 	["_InitOpen"] = Instance.new("LocalScript");
+        Wait(3)
 	["_OnClick"] = Instance.new("LocalScript");
 	["_Resizer"] = Instance.new("LocalScript");
 	["_UIPadding"] = Instance.new("UIPadding");
