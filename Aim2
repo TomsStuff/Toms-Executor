@@ -36,9 +36,14 @@ local function updateCamera()
     if isScriptEnabled and isLockingEnabled then
         local closestPlayer = getClosestPlayerToMouse()
 
-        if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild("Head") then
-            local targetPosition = closestPlayer.Character.Head.Position
-            camera.CFrame = CFrame.new(camera.CFrame.Position, targetPosition)
+        if closestPlayer then
+            print("Closest Player Found: " .. closestPlayer.Name)
+            if closestPlayer.Character and closestPlayer.Character:FindFirstChild("Head") then
+                local targetPosition = closestPlayer.Character.Head.Position
+                camera.CFrame = CFrame.new(camera.CFrame.Position, targetPosition)
+            end
+        else
+            print("No Closest Player Found")
         end
     end
 end
@@ -56,11 +61,14 @@ end
 -- Function to toggle locking
 local function toggleLocking()
     if isScriptEnabled then  -- Ensure locking only works if the script is enabled
-        isLockingEnabled = not isLockingEnabled
         if isLockingEnabled then
-            lockMouse()
-        else
             unlockMouse()
+            isLockingEnabled = false
+            print("Locking Disabled")
+        else
+            lockMouse()
+            isLockingEnabled = true
+            print("Locking Enabled")
         end
     end
 end
@@ -68,19 +76,30 @@ end
 -- Function to toggle script functionality
 local function toggleScript()
     isScriptEnabled = not isScriptEnabled
-    if not isScriptEnabled then
+    if isScriptEnabled then
+        print("Script Enabled")
+    else
         unlockMouse()  -- Ensure mouse is unlocked if script is disabled
+        print("Script Disabled")
     end
 end
 
--- Bind the right mouse button to toggle locking and L key to toggle script
+-- Handle mouse button events for locking
 userInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed then
+    if not gameProcessed and isScriptEnabled then
         if input.UserInputType == Enum.UserInputType.MouseButton2 then  -- Right Mouse Button
-            toggleLocking()
+            lockMouse()
+            isLockingEnabled = true
         elseif input.KeyCode == Enum.KeyCode.L then
             toggleScript()
         end
+    end
+end)
+
+userInputService.InputEnded:Connect(function(input)
+    if isScriptEnabled and input.UserInputType == Enum.UserInputType.MouseButton2 then
+        unlockMouse()
+        isLockingEnabled = false
     end
 end)
 
