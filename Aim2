@@ -83,10 +83,16 @@ local function toggleScript()
     end
 end
 
--- Bind the right mouse button to toggle locking
-userInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed then
-        if input.UserInputType == Enum.UserInputType.MouseButton2 then  -- Right Mouse Button
+
+mouse.Button2Down:Connect(function()
+    isLocking = true
+    lockMouse()
+end)
+
+mouse.Button2Up:Connect(function()
+    isLocking = false
+    unlockMouse()
+end)
             toggleLocking()
         elseif input.KeyCode == Enum.KeyCode.L then
             toggleScript()
