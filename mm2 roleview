@@ -1,6 +1,5 @@
 --[[
-    Credits to Kiriot22 for the Role getter <3
-        - poorly coded by FeIix <3
+kill me
 ]]
 
 -- > Declarations < --
@@ -38,7 +37,7 @@ function UpdateHighlights() -- Get Current Role Colors (messy)
 	end
 end	
 
-function IsAlive(Player) -- Simple sexy function
+function IsAlive(Player) -- 
 	for i, v in pairs(roles) do
 		if Player.Name == i then
 			if not v.Killed and not v.Dead then
