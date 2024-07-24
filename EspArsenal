@@ -1,5 +1,4 @@
--- Simple ESP Script for R15 Characters
--- For educational purposes only. Do not use in real games.
+
 
 -- Function to create a highlight box around a part
 local function createHighlightBox(part)
