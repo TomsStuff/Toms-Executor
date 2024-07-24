@@ -114,19 +114,10 @@ end
 
 -- Function to load the player
 local function LoadPlayer(v)
-    -- Skip the local player
-    if v == plr then
-        return
-    end
-
     local vHolder = Instance.new("Folder", Holder)
     vHolder.Name = v.Name
     v.CharacterAdded:Connect(function()
-        pcall(function()
-            if _G.ESPEnabled and (plr.Team ~= v.Team) then
-                LoadCharacter(v)
-            end
-        end)
+        pcall(LoadCharacter, v)
     end)
     v.CharacterRemoving:Connect(function()
         pcall(UnloadCharacter, v)
@@ -135,14 +126,10 @@ local function LoadPlayer(v)
         if prop == "TeamColor" then
             UnloadCharacter(v)
             wait()
-            if _G.ESPEnabled and (plr.Team ~= v.Team) then
-                LoadCharacter(v)
-            end
+            LoadCharacter(v)
         end
     end)
-    if _G.ESPEnabled and (plr.Team ~= v.Team) then
-        LoadCharacter(v)
-    end
+    LoadCharacter(v)
 end
 
 -- Function to unload the player
@@ -218,8 +205,8 @@ local function toggleESP()
     else
         -- Add Highlight and NameTag for all players
         for _, v in pairs(players:GetPlayers()) do
-            if v ~= plr and (plr.Team ~= v.Team) then
-                esp(v, _G.UseTeamColor and v.TeamColor.Color or _G.EnemyColor)
+            if v ~= plr then
+                esp(v, _G.UseTeamColor and v.TeamColor.Color or ((plr.TeamColor == v.TeamColor) and _G.FriendColor or _G.EnemyColor))
                 -- Recreate NameTags
                 LoadCharacter(v)  -- This will also update NameTag visibility
             end
@@ -238,8 +225,8 @@ end)
 while task.wait() do
     if _G.ESPEnabled then
         for i, v in pairs(players:GetPlayers()) do
-            if v ~= plr and (plr.Team ~= v.Team) then
-                esp(v, _G.UseTeamColor and v.TeamColor.Color or _G.EnemyColor)
+            if v ~= plr then
+                esp(v, _G.UseTeamColor and v.TeamColor.Color or ((plr.TeamColor == v.TeamColor) and _G.FriendColor or _G.EnemyColor))
             end
         end
     end
