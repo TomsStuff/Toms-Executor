@@ -15,7 +15,7 @@ local Settings = {
 local Screen = Instance.new("ScreenGui", game.CoreGui)
 local Distance = Instance.new("TextLabel", Screen)
 Distance.BackgroundTransparency = 1
-Distance.Size = UDim2.new(0, 100, 0, 50)
+Distance.Size = UDim2.new(0, 10, 0, 10)
 Distance.ZIndex = 2
 Distance.Text = "0"
 Distance.TextStrokeTransparency = .5
@@ -39,7 +39,6 @@ local Sprinting = false
 local CameraPos = game.Workspace.CurrentCamera.CFrame.Position
 local KeyStates = {}
 
--- Ensure character is not visible
 pcall(function()
     game.Players.LocalPlayer.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Invisicam
 end)
@@ -79,33 +78,11 @@ UserInputService.InputBegan:Connect(function(inputObject, gameProcessedEvent)
             KeyStates[Settings.ToggleKey] = true
             Toggled = not Toggled
             if Toggled then
-                LastPos = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and game.Players.LocalPlayer.Character.HumanoidRootPart.Position
-                if game.Players.LocalPlayer.Character then
-                    local humanoid = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-                    if humanoid then
-                        humanoid.PlatformStand = true
-                        for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-                            if v:IsA("BasePart") then
-                                v.Transparency = 1
-                                v.CanCollide = false
-                            end
-                        end
-                    end
-                end
+                LastPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
+                game.Players.LocalPlayer.Character.Humanoid.PlatformStand = true
             else
                 LastPos = nil
-                if game.Players.LocalPlayer.Character then
-                    local humanoid = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-                    if humanoid then
-                        humanoid.PlatformStand = false
-                        for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-                            if v:IsA("BasePart") then
-                                v.Transparency = 0
-                                v.CanCollide = true
-                            end
-                        end
-                    end
-                end
+                game.Players.LocalPlayer.Character.Humanoid.PlatformStand = false
             end
         elseif inputObject.KeyCode == Settings.SprintKey then
             KeyStates[Settings.SprintKey] = true
@@ -133,6 +110,11 @@ end)
 
 RunService.RenderStepped:Connect(function()
     if Toggled and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.Velocity = Vector3.new(0, 0, 0)
+            end
+        end
         local RootPart = game.Players.LocalPlayer.Character.HumanoidRootPart
         if LastPos then
             Distance.Text = math.floor((LastPos - RootPart.Position).Magnitude + .5)
@@ -143,13 +125,13 @@ RunService.RenderStepped:Connect(function()
             end
         else
             Distance.TextColor3 = Color3.new(1, 1, 1)
-            Distance.Text = "0"
+            Distance.Text = 0
         end
         InterpolatedDir = InterpolatedDir:Lerp((Direction * (Sprinting and Settings.SprintSpeed or Settings.Speed)), .2)
         InterpolatedTilt = Lerp(InterpolatedTilt, Tilt * (Sprinting and 2 or 1), Tilt == 0 and .2 or .1)
         RootPart.CFrame = RootPart.CFrame:Lerp(CFrame.new(RootPart.Position, RootPart.Position + Mouse.UnitRay.Direction) * CFrame.Angles(0, math.rad(00), 0) * CFrame.new(InterpolatedDir) * CFrame.Angles(math.rad(InterpolatedTilt), 0, 0), .2)
     else
         Distance.TextColor3 = Color3.new(1, 1, 1)
-        Distance.Text = "0"
+        Distance.Text = 0
     end
 end)
