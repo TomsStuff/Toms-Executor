@@ -6,31 +6,7 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Duration = 5,  -- Notification will be displayed for 5 seconds
     Button1 = "OK"
 })
-
-local Universal = loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/TheSauce2'))()
-local Arsenal = loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/EspArsenal'))()
-local Aimbot = loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/gurraim"))()
-
-
-local arsenalGameId = 286090429
-
-
-local function checkGame()
-    -- Get the current place ID
-    local placeId = game.PlaceId
-    
-    if placeId == arsenalGameId then
-        Arsenal.Load()
-        Aimbot.Load()
-        print("Arsenal Aimbot Loaded")
-    else
-        Universal.Load()
-        Aimbot.Load()
-       print("Universal Aimbot Loaded")
-    end
-end
-
-
-game.Players.PlayerAdded:Connect(checkGame)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/gurraim"))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/TheSauce2'))()
 
 
