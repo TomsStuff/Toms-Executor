@@ -19,8 +19,10 @@ local function checkGame()
     
     if placeId == arsenalGameId then
         Arsenal.Load()
+        print("Arsenal Aimbot Loaded")
     else
         Universal.Load()
+       print("Universal Aimbot Loaded")
     end
 end
 
