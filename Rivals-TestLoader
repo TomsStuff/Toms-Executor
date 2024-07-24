@@ -1,0 +1,10 @@
+-- Display a notification to the user
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Tom's Buggy Rivals ESP + Aimbot",
+    Text = "Successfully Loaded! Expect Bugs Though...",
+    Duration = 5,  -- Notification will be displayed for 5 seconds
+    Button1 = "OK"
+})
+loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-Aimbot"))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-Test'))()
