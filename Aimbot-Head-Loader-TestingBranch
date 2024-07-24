@@ -1,10 +1,32 @@
 -- Display a notification to the user
+
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Tom's ESP + Aimbot",
     Text = "Successfully Loaded!",
     Duration = 5,  -- Notification will be displayed for 5 seconds
     Button1 = "OK"
 })
+
+local Universal = loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/TheSauce2'))()
+local Arsenal = loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/EspArsenal'))()
+
+local arsenalGameId = 286090429
+
+
+local function checkGame()
+    -- Get the current place ID
+    local placeId = game.PlaceId
+    
+    if placeId == arsenalGameId then
+        Arsenal.Load()
+    else
+        Universal.Load()
+    end
+end
+
+
+game.Players.PlayerAdded:Connect(checkGame)
+
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/gurraim"))()
 loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/TheSauce2'))()
