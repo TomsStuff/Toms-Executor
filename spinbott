@@ -1,0 +1,42 @@
+local speed = 50
+local plr = game:GetService("Players").LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+
+repeat task.wait() until plr.Character
+local char = plr.Character
+local humRoot = char:WaitForChild("HumanoidRootPart")
+local humanoid = char:WaitForChild("Humanoid")
+local originalAutoRotate = humanoid.AutoRotate
+
+-- Create and configure AngularVelocity
+local velocity = Instance.new("AngularVelocity")
+velocity.Attachment0 = humRoot:WaitForChild("RootAttachment")
+velocity.MaxTorque = math.huge
+velocity.AngularVelocity = Vector3.new(0, speed, 0)
+velocity.Name = "speen"
+
+local isActive = false
+
+local function toggleSpeed()
+    if isActive then
+        -- Revert changes
+        velocity:Destroy()
+        humanoid.AutoRotate = originalAutoRotate
+    else
+        -- Apply changes
+        humanoid.AutoRotate = false
+        velocity = Instance.new("AngularVelocity")
+        velocity.Attachment0 = humRoot:WaitForChild("RootAttachment")
+        velocity.MaxTorque = math.huge
+        velocity.AngularVelocity = Vector3.new(0, speed, 0)
+        velocity.Parent = humRoot
+        velocity.Name = "speen"
+    end
+    isActive = not isActive
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent and input.KeyCode == Enum.KeyCode.U then
+        toggleSpeed()
+    end
+end)
