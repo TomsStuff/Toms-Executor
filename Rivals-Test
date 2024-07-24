@@ -1,87 +1,49 @@
-local player = game.Players.LocalPlayer
-local mouse = player:GetMouse()
-local camera = game.Workspace.CurrentCamera
-local runService = game:GetService("RunService")
-local userInputService = game:GetService("UserInputService")
+local FillColor = Color3.fromRGB(238, 75, 43)
+local DepthMode = "AlwaysOnTop"
+local FillTransparency = 0.5
+local OutlineColor = Color3.fromRGB(255,255,255)
+local OutlineTransparency = 0
 
-local isLocking = false
-local isScriptActive = true  -- Variable to manage the script's state
+local CoreGui = game:FindService("CoreGui")
+local Players = game:FindService("Players")
+local lp = Players.LocalPlayer
+local connections = {}
 
--- Function to get the closest player to the mouse position
-local function getClosestPlayerToMouse()
-    local closestPlayer = nil
-    local shortestDistance = math.huge
+local Storage = Instance.new("Folder")
+Storage.Parent = CoreGui
+Storage.Name = "Highlight_Storage"
+
+local function Highlight(plr)
+    local Highlight = Instance.new("Highlight")
+    Highlight.Name = plr.Name
+    Highlight.FillColor = FillColor
+    Highlight.DepthMode = DepthMode
+    Highlight.FillTransparency = FillTransparency
+    Highlight.OutlineColor = OutlineColor
+    Highlight.OutlineTransparency = 0
+    Highlight.Parent = Storage
     
-    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-        if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("FakeMass") then
-            local head = otherPlayer.Character.FakeMass
-            local screenPoint = camera:WorldToScreenPoint(FakeMass.Position)
-            local mousePos = Vector2.new(mouse.X, mouse.Y)
-            local distance = (Vector2.new(screenPoint.X, screenPoint.Y) - mousePos).magnitude
-            
-            if screenPoint.Z > 0 and screenPoint.X >= 0 and screenPoint.X <= camera.ViewportSize.X and screenPoint.Y >= 0 and screenPoint.Y <= camera.ViewportSize.Y then
-                if distance < shortestDistance then
-                    shortestDistance = distance
-                    closestPlayer = otherPlayer
-                end
-            end
-        end
+    local plrchar = plr.Character
+    if plrchar then
+        Highlight.Adornee = plrchar
     end
-    
-    return closestPlayer
+
+    connections[plr] = plr.CharacterAdded:Connect(function(char)
+        Highlight.Adornee = char
+    end)
 end
 
--- Function to update the camera's orientation to look at the closest player
-local function updateCamera()
-    local closestPlayer = getClosestPlayerToMouse()
-    
-    if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild("FakeMass") then
-        local targetPosition = closestPlayer.Character.FakeMass.Position
-        camera.CFrame = CFrame.new(camera.CFrame.Position, targetPosition)
-    end
+Players.PlayerAdded:Connect(Highlight)
+for i,v in next, Players:GetPlayers() do
+    Highlight(v)
 end
 
--- Function to lock the mouse
-local function lockMouse()
-    userInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
-end
-
--- Function to unlock the mouse
-local function unlockMouse()
-    userInputService.MouseBehavior = Enum.MouseBehavior.Default
-end
-
--- Handle mouse input and camera updates
-mouse.Button2Down:Connect(function()
-    if isScriptActive then
-        isLocking = true
-        lockMouse()
+Players.PlayerRemoving:Connect(function(plr)
+    local plrname = plr.Name
+    if Storage[plrname] then
+        Storage[plrname]:Destroy()
     end
-end)
-
-mouse.Button2Up:Connect(function()
-    if isScriptActive then
-        isLocking = false
-        unlockMouse()
-    end
-end)
-
-runService.RenderStepped:Connect(function()
-    if isScriptActive and isLocking then
-        updateCamera()
-    end
-end)
-
--- Keybind for toggling the script on and off
-local toggleKey = Enum.KeyCode.L -- You can change this to any key you prefer
-
-userInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if not gameProcessedEvent and input.KeyCode == toggleKey then
-        isScriptActive = not isScriptActive
-        if not isScriptActive then
-            -- If the script is being deactivated, unlock the mouse
-            unlockMouse()
-            isLocking = false
-        end
+    if connections[plr] then
+        connections[plr]:Disconnect()
     end
 end)
