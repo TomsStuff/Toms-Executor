@@ -1,0 +1,74 @@
+-- Place this script in a LocalScript under StarterPlayerScripts or StarterCharacterScripts
+
+-- Services
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Get the LocalPlayer
+local player = Players.LocalPlayer
+
+-- State variables
+local isLocked = false
+local rightMouseHeld = false
+
+-- Function to find the closest player head
+local function getClosestPlayerHead()
+    local closestPlayerHead = nil
+    local closestDistance = math.huge
+
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Head") then
+            local head = otherPlayer.Character.Head
+            local distance = (player.Character.HumanoidRootPart.Position - head.Position).magnitude
+            if distance < closestDistance then
+                closestDistance = distance
+                closestPlayerHead = head
+            end
+        end
+    end
+
+    return closestPlayerHead
+end
+
+-- Function to lock camera to target head
+local function lockCameraToHead()
+    local camera = Workspace.CurrentCamera
+    local head = getClosestPlayerHead()
+
+    if head then
+        local headPosition = head.Position
+        local cameraPosition = camera.CFrame.Position
+
+        -- Calculate direction to the head
+        local direction = (headPosition - cameraPosition).unit
+
+        -- Update camera CFrame
+        camera.CFrame = CFrame.lookAt(cameraPosition, headPosition)
+    end
+end
+
+-- Input handling
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        rightMouseHeld = true
+    elseif input.KeyCode == Enum.KeyCode.L then
+        isLocked = not isLocked
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        rightMouseHeld = false
+    end
+end)
+
+-- Connect to RenderStepped for continuous updates
+RunService.RenderStepped:Connect(function()
+    if isLocked and rightMouseHeld then
+        lockCameraToHead()
+    end
+end)
