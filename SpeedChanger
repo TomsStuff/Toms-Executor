@@ -1,0 +1,39 @@
+-- Toggle speed changer script
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local userInputService = game:GetService("UserInputService")
+
+local isSpeedChanged = false
+local defaultSpeed = 16
+local changedSpeed = 30
+
+-- Function to toggle speed
+local function toggleSpeed()
+    if isSpeedChanged then
+        humanoid.WalkSpeed = defaultSpeed
+    else
+        humanoid.WalkSpeed = changedSpeed
+    end
+    isSpeedChanged = not isSpeedChanged
+end
+
+-- Key press event
+userInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then
+        return
+    end
+
+    if input.KeyCode == Enum.KeyCode.P then
+        toggleSpeed()
+    end
+end)
+
+-- Ensure speed is reset when the character respawns
+player.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+    humanoid = character:WaitForChild("Humanoid")
+    humanoid.WalkSpeed = defaultSpeed
+    isSpeedChanged = false
+end)
