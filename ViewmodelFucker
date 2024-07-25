@@ -1,9 +1,8 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerName = player.Name
-local RunService = game:GetService("RunService")
 
-
+-- List of gun model names you want to hide
 local gunNames = {
     playerName .. " - Exogun - Exogun",
     playerName .. " - Assault Rifle - Assault Rifle",
@@ -32,17 +31,17 @@ local gunNames = {
     playerName .. " - Grenade - Grenade",
     playerName .. " - Molotov - Molotov",
     playerName .. " - Smoke Grenade - Smoke Grenade",
+
+
 }
 
-local camera = workspace.CurrentCamera
-local models = {}
-local modelCache = {}
+local camera = game.Workspace.CurrentCamera
 
-
+-- Function to update model position
 local function updateModelPosition(model)
     local offset = Vector3.new(0, -400000, -2)  -- Adjust the offset as needed
     local newCFrame = camera.CFrame * CFrame.new(offset)
-
+    
     for _, part in pairs(model:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CFrame = newCFrame
@@ -50,27 +49,24 @@ local function updateModelPosition(model)
     end
 end
 
-
+-- Function to handle each gun model
 local function handleGunModel(gunName)
-    if modelCache[gunName] then return end
-
     local targetModel = workspace.ViewModels.FirstPerson:FindFirstChild(gunName)
+    
     if targetModel then
-        -- Cache the model and unparent it
-        modelCache[gunName] = targetModel
+        -- Ensure the targetModel is unparented from its previous parent
         targetModel.Parent = nil
-        models[gunName] = targetModel
+        
+        -- Continuously update the model's position every frame
+        game:GetService("RunService").RenderStepped:Connect(function()
+            updateModelPosition(targetModel)
+        end)
     end
 end
 
-
-RunService.RenderStepped:Connect(function()
-    for gunName, model in pairs(models) do
-        updateModelPosition(model)
+-- Continuously check for and handle each gun model
+game:GetService("RunService").RenderStepped:Connect(function()
+    for _, gunName in ipairs(gunNames) do
+        handleGunModel(gunName)
     end
 end)
-
-
-for _, gunName in ipairs(gunNames) do
-    handleGunModel(gunName)
-end
