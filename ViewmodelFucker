@@ -1,40 +1,72 @@
--- This script should be placed in StarterPlayerScripts or another client-side service.
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerName = player.Name
 
--- Get the local player
-local player = game.Players.LocalPlayer
 
--- Check if the player exists
-if player then
-    local playerName = player.Name
+local gunNames = {
+    playerName .. " - Exogun - Exogun",
+    playerName .. " - Assault Rifle - Assault Rifle",
+    playerName .. " - Trowel - Trowel",
+    playerName .. " - Minigun - Minigun",
+    playerName .. " - Grenade Launcher - Grenade Launcher",
+    playerName .. " - Paintball Gun - Paintball Gun",
+    playerName .. " - Bow - Bow",
+    playerName .. " - RPG - RPG",
+    playerName .. " - Sniper - Sniper",
+    playerName .. " - Burst Rifle - Burst Rifle",
+    playerName .. " - Flamethrower - Flamethrower",
+    playerName .. " - Shotgun - Shotgun",
+    playerName .. " - Slingshot - Slingshot",
+    playerName .. " - Flare Gun - Flare Gun",
+    playerName .. " - Handgun - Handgun",
+    playerName .. " - Revolver - Revolver",
+    playerName .. " - Shorty - Shorty",
+    playerName .. " - Uzi - Uzi",
+    playerName .. " - Katana - Katana",
+    playerName .. " - Knife - Knife",
+    playerName .. " - Scythe - Scythe",
+    playerName .. " - Flashbang - Flashbang",
+    playerName .. " - Subspace Tripmine - Subspace Tripmine",
+    playerName .. " - Freeze Ray - Freeze Ray",
+    playerName .. " - Grenade - Grenade",
+    playerName .. " - Molotov - Molotov",
+    playerName .. " - Smoke Grenade - Smoke Grenade",
 
-    -- Find the model with the player's name
-    local targetModel = workspace.ViewModels.FirstPerson:FindFirstChild(playerName .. " - Exogun - Exogun")
-    local camera = game.Workspace.CurrentCamera
 
+}
+
+local camera = game.Workspace.CurrentCamera
+
+
+local function updateModelPosition(model)
+    local offset = Vector3.new(0, -400000, -2)  -- Adjust the offset as needed
+    local newCFrame = camera.CFrame * CFrame.new(offset)
+    
+    for _, part in pairs(model:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CFrame = newCFrame
+        end
+    end
+end
+
+
+local function handleGunModel(gunName)
+    local targetModel = workspace.ViewModels.FirstPerson:FindFirstChild(gunName)
+    
     if targetModel then
-        print("Model found:", targetModel.Name)
-        
         -- Ensure the targetModel is unparented from its previous parent
         targetModel.Parent = nil
         
-        local function updateModelPosition()
-            -- Update the position relative to the camera
-            local offset = Vector3.new(0, 0, 0)  -- Adjust the offset as needed
-            local newCFrame = camera.CFrame * CFrame.new(offset)
-            
-            -- Update each part's CFrame in the model to match the new CFrame
-            for _, part in pairs(targetModel:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CFrame = newCFrame
-                end
-            end
-        end
-        
         -- Continuously update the model's position every frame
-        game:GetService("RunService").RenderStepped:Connect(updateModelPosition)
-    else
-        print("Model not found.")
+        game:GetService("RunService").RenderStepped:Connect(function()
+            updateModelPosition(targetModel)
+        end)
     end
-else
-    print("Local player not found.")
 end
+
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    for _, gunName in ipairs(gunNames) do
+        handleGunModel(gunName)
+    end
+end)
