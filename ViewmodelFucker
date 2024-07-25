@@ -1,0 +1,40 @@
+-- This script should be placed in StarterPlayerScripts or another client-side service.
+
+-- Get the local player
+local player = game.Players.LocalPlayer
+
+-- Check if the player exists
+if player then
+    local playerName = player.Name
+
+    -- Find the model with the player's name
+    local targetModel = workspace.ViewModels.FirstPerson:FindFirstChild(playerName .. " - Exogun - Exogun")
+    local camera = game.Workspace.CurrentCamera
+
+    if targetModel then
+        print("Model found:", targetModel.Name)
+        
+        -- Ensure the targetModel is unparented from its previous parent
+        targetModel.Parent = nil
+        
+        local function updateModelPosition()
+            -- Update the position relative to the camera
+            local offset = Vector3.new(0, 0, 0)  -- Adjust the offset as needed
+            local newCFrame = camera.CFrame * CFrame.new(offset)
+            
+            -- Update each part's CFrame in the model to match the new CFrame
+            for _, part in pairs(targetModel:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CFrame = newCFrame
+                end
+            end
+        end
+        
+        -- Continuously update the model's position every frame
+        game:GetService("RunService").RenderStepped:Connect(updateModelPosition)
+    else
+        print("Model not found.")
+    end
+else
+    print("Local player not found.")
+end
