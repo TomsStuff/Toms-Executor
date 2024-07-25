@@ -1,13 +1,15 @@
 local FillColor = Color3.fromRGB(238, 75, 43)
 local DepthMode = "AlwaysOnTop"
 local FillTransparency = 0.5
-local OutlineColor = Color3.fromRGB(255,255,255)
+local OutlineColor = Color3.fromRGB(255, 255, 255)
 local OutlineTransparency = 0
 
 local CoreGui = game:FindService("CoreGui")
 local Players = game:FindService("Players")
+local UserInputService = game:FindService("UserInputService")
 local lp = Players.LocalPlayer
 local connections = {}
+local highlightsEnabled = true
 
 local Storage = Instance.new("Folder")
 Storage.Parent = CoreGui
@@ -20,7 +22,7 @@ local function Highlight(plr)
     Highlight.DepthMode = DepthMode
     Highlight.FillTransparency = FillTransparency
     Highlight.OutlineColor = OutlineColor
-    Highlight.OutlineTransparency = 0
+    Highlight.OutlineTransparency = OutlineTransparency
     Highlight.Parent = Storage
     
     local plrchar = plr.Character
@@ -33,9 +35,37 @@ local function Highlight(plr)
     end)
 end
 
-Players.PlayerAdded:Connect(Highlight)
-for i,v in next, Players:GetPlayers() do
-    Highlight(v)
+local function ToggleHighlights()
+    highlightsEnabled = not highlightsEnabled
+    if highlightsEnabled then
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if not Storage:FindFirstChild(plr.Name) then
+                Highlight(plr)
+            end
+        end
+    else
+        for _, item in ipairs(Storage:GetChildren()) do
+            item:Destroy()
+        end
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.K then
+        ToggleHighlights()
+    end
+end)
+
+Players.PlayerAdded:Connect(function(plr)
+    if highlightsEnabled then
+        Highlight(plr)
+    end
+end)
+
+for i, v in ipairs(Players:GetPlayers()) do
+    if highlightsEnabled then
+        Highlight(v)
+    end
 end
 
 Players.PlayerRemoving:Connect(function(plr)
