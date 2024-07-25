@@ -1,0 +1,55 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerName = player.Name
+local RunService = game:GetService("RunService")
+
+
+local gunNames = {
+    playerName .. " - Exogun - Exogun",
+    playerName .. " - Assault Rifle - Assault Rifle",
+	@@ -32,45 +31,42 @@ local gunNames = {
+    playerName .. " - Grenade - Grenade",
+    playerName .. " - Molotov - Molotov",
+    playerName .. " - Smoke Grenade - Smoke Grenade",
+}
+
+local camera = workspace.CurrentCamera
+local models = {}
+local modelCache = {}
+
+
+local function updateModelPosition(model)
+    local offset = Vector3.new(0, -400000, -2)  -- Adjust the offset as needed
+    local newCFrame = camera.CFrame * CFrame.new(offset)
+
+    for _, part in pairs(model:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CFrame = newCFrame
+        end
+    end
+end
+
+
+local function handleGunModel(gunName)
+    if modelCache[gunName] then return end
+
+    local targetModel = workspace.ViewModels.FirstPerson:FindFirstChild(gunName)
+    if targetModel then
+        -- Cache the model and unparent it
+        modelCache[gunName] = targetModel
+        targetModel.Parent = nil
+        models[gunName] = targetModel
+    end
+end
+
+
+RunService.RenderStepped:Connect(function()
+    for gunName, model in pairs(models) do
+        updateModelPosition(model)
+    end
+end)
+
+
+for _, gunName in ipairs(gunNames) do
+    handleGunModel(gunName)
+end
