@@ -1,0 +1,124 @@
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local camera = game.Workspace.CurrentCamera
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
+
+local isLocking = false
+local isScriptActive = true  -- Variable to manage the script's state
+local lockBodyPart = "Head"  -- Default body part to lock onto
+
+-- Function to find the index of a value in a table
+local function tableFind(tbl, value)
+    for index, val in ipairs(tbl) do
+        if val == value then
+            return index
+        end
+    end
+    return nil
+end
+
+-- Function to get the closest player to the mouse position
+local function getClosestPlayerToMouse()
+    local closestPlayer = nil
+    local closestPart = nil
+    local shortestDistance = math.huge
+    
+    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character then
+            local character = otherPlayer.Character
+            local bodyParts = {
+                character:FindFirstChild("Head"),
+                character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso") or character:FindFirstChild("LowerTorso")
+            }
+            
+            for _, part in pairs(bodyParts) do
+                if part then
+                    local screenPoint = camera:WorldToScreenPoint(part.Position)
+                    local mousePos = Vector2.new(mouse.X, mouse.Y)
+                    local distance = (Vector2.new(screenPoint.X, screenPoint.Y) - mousePos).magnitude
+                    
+                    if screenPoint.Z > 0 and screenPoint.X >= 0 and screenPoint.X <= camera.ViewportSize.X and screenPoint.Y >= 0 and screenPoint.Y <= camera.ViewportSize.Y then
+                        if distance < shortestDistance then
+                            shortestDistance = distance
+                            closestPlayer = otherPlayer
+                            closestPart = part
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    return closestPlayer, closestPart
+end
+
+-- Function to update the camera's orientation to look at the closest player and body part
+local function updateCamera()
+    local closestPlayer, closestPart = getClosestPlayerToMouse()
+    
+    if closestPlayer and closestPart then
+        local targetPosition = closestPart.Position
+        camera.CFrame = CFrame.new(camera.CFrame.Position, targetPosition)
+    end
+end
+
+-- Function to lock the mouse
+local function lockMouse()
+    userInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+end
+
+-- Function to unlock the mouse
+local function unlockMouse()
+    userInputService.MouseBehavior = Enum.MouseBehavior.Default
+end
+
+-- Handle mouse input and camera updates
+mouse.Button2Down:Connect(function()
+    if isScriptActive then
+        isLocking = true
+        lockMouse()
+    end
+end)
+
+mouse.Button2Up:Connect(function()
+    if isScriptActive then
+        isLocking = false
+        unlockMouse()
+    end
+end)
+
+runService.RenderStepped:Connect(function()
+    if isScriptActive and isLocking then
+        updateCamera()
+    end
+end)
+
+-- Keybind for toggling the script on and off
+local toggleKey = Enum.KeyCode.L -- You can change this to any key you prefer
+
+userInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent and input.KeyCode == toggleKey then
+        isScriptActive = not isScriptActive
+        if not isScriptActive then
+            -- If the script is being deactivated, unlock the mouse
+            unlockMouse()
+            isLocking = false
+        end
+    end
+end)
+
+-- Keybind to change the body part to lock onto
+local changeBodyPartKey = Enum.KeyCode.B -- You can change this to any key you prefer
+
+userInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent and input.KeyCode == changeBodyPartKey then
+        local bodyParts = {"Head", "Torso", "LeftLeg", "RightLeg", "LeftArm", "RightArm", "LeftUpperArm", "LeftLowerArm", "RightUpperArm", "RightLowerArm", "LeftUpperLeg", "LeftLowerLeg", "RightUpperLeg", "RightLowerLeg", "LeftFoot", "RightFoot", "LeftHand", "RightHand"}
+        local currentIndex = tableFind(bodyParts, lockBodyPart)
+        if currentIndex then
+            lockBodyPart = bodyParts[(currentIndex % #bodyParts) + 1]
+        else
+            lockBodyPart = "Head" -- Default to head if something goes wrong
+        end
+    end
+end)
