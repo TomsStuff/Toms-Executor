@@ -1,0 +1,66 @@
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+
+local function updateFireRates()
+    -- Try to find the "Weapons" folder in ReplicatedStorage
+    local weaponsFolder = ReplicatedStorage:FindFirstChild("Weapons")
+
+
+    if weaponsFolder then
+        print("Weapons folder found!")
+
+       
+        for _, weapon in pairs(weaponsFolder:GetChildren()) do
+            
+            if weapon:IsA("Folder") then
+                
+                local fireRateValue = weapon:FindFirstChild("FireRate")
+
+                
+                if fireRateValue and fireRateValue:IsA("NumberValue") then
+                    
+
+                    
+                    local newFireRate = 0.1  -- Set this to the desired fire rate
+                    fireRateValue.Value = newFireRate
+                    
+                else
+                   
+                end
+            
+            end
+        end
+  
+    end
+end
+
+
+local function onPlayerRespawn(player)
+  
+    player.CharacterAdded:Connect(function(character)
+        -- Wait for the humanoid to be added to the character
+        local humanoid = character:WaitForChild("Humanoid")
+        
+      
+        humanoid.Died:Connect(function()
+            print("Player died: " .. player.Name)
+            
+           
+            player.CharacterAdded:Connect(function()
+                print("Player respawned: " .. player.Name)
+                updateFireRates()
+            end)
+        end)
+    end)
+end
+
+
+Players.PlayerAdded:Connect(function(player)
+ 
+    onPlayerRespawn(player)
+end)
+
+
+updateFireRates()
