@@ -1,0 +1,179 @@
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+
+-- Check if the UI already exists
+local function checkIfUIExists()
+    for _, child in pairs(CoreGui:GetChildren()) do
+        if child:IsA("ScreenGui") and child.Name == "TomHubUI" then
+            print("stop")
+            return true
+        end
+    end
+    return false
+end
+
+-- Create UI function
+local function createUI()
+    if checkIfUIExists() then
+        return
+    end
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "TomHubUI"  -- Set a name for identification
+    local MainFrame = Instance.new("Frame")
+    local TextLabel = Instance.new("TextLabel")
+    local TabButtonsFrame = Instance.new("Frame")  -- Frame for Tab Buttons
+    local Tab1 = Instance.new("TextButton")
+    local Tab2 = Instance.new("TextButton")
+    local Tab3 = Instance.new("TextButton")
+    local Tab4 = Instance.new("TextButton")
+    local Tab1Frame = Instance.new("Frame")
+    local Tab2Frame = Instance.new("Frame")
+    local Tab3Frame = Instance.new("Frame")
+    local Tab4Frame = Instance.new("Frame")
+
+    -- Parent the GUI to CoreGui to hide it from detection
+    ScreenGui.Parent = CoreGui
+
+    -- Main Frame properties
+    MainFrame.Parent = ScreenGui
+    MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    MainFrame.Size = UDim2.new(0, 450, 0, 600)
+    MainFrame.Position = UDim2.new(0.5, -225, 0.5, -300)
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+
+    -- TextLabel properties
+    TextLabel.Parent = MainFrame
+    TextLabel.Text = "Tom's Hub | Who needs sex anyways?"
+    TextLabel.Font = Enum.Font.SourceSans
+    TextLabel.TextSize = 24
+    TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Match TabButtonsFrame color
+    TextLabel.BackgroundTransparency = 0
+    TextLabel.Position = UDim2.new(0, 0, 0, 0)  -- Top of MainFrame
+    TextLabel.Size = UDim2.new(1, 0, 0, 50)     -- Full width, height of 50
+    TextLabel.BorderSizePixel = 0 -- Remove border
+
+    -- Tab Buttons Frame properties
+    TabButtonsFrame.Parent = MainFrame
+    TabButtonsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Match TextLabel color
+    TabButtonsFrame.Size = UDim2.new(1, 0, 0, 30) -- Adjusted height for tab buttons
+    TabButtonsFrame.Position = UDim2.new(0, 0, 0, 45) -- Moved up by 5 pixels
+    TabButtonsFrame.BorderSizePixel = 0 -- Remove border
+
+    -- Content Frame properties
+    local ContentFrame = Instance.new("Frame")
+    ContentFrame.Parent = MainFrame
+    ContentFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    ContentFrame.Size = UDim2.new(1, 0, 1, -80) -- Fits below TabButtonsFrame
+    ContentFrame.Position = UDim2.new(0, 0, 0, 80) -- Directly below TabButtonsFrame
+    ContentFrame.Visible = true
+    ContentFrame.BorderSizePixel = 0 -- Remove border
+
+    -- Function to create tab buttons and frames
+    local function createTab(button, position, text, tabFrame, loadStringCode, buttonText)
+        button.Parent = TabButtonsFrame
+        button.Size = UDim2.new(0, 80, 0, 30)
+        button.Position = position
+        button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        button.Font = Enum.Font.SourceSans
+        button.TextSize = 18
+        button.Text = text
+        button.BorderSizePixel = 0 -- Remove border
+
+        -- Frame for the tab's content
+        tabFrame.Parent = ContentFrame
+        tabFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        tabFrame.Size = UDim2.new(1, 0, 1, 0)
+        tabFrame.Position = UDim2.new(0, 0, 0, 0)
+        tabFrame.Visible = false
+        tabFrame.Name = text
+
+        -- Add a button to the tab frame
+        local tabButton = Instance.new("TextButton")
+        tabButton.Parent = tabFrame
+        tabButton.Size = UDim2.new(0, 177, 0, 50)
+        tabButton.Position = UDim2.new(0.5, -75, 0.5, -25)
+        tabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        tabButton.Font = Enum.Font.SourceSans
+        tabButton.TextSize = 20
+        tabButton.Text = buttonText
+        tabButton.BorderSizePixel = 0 -- Remove border
+
+        -- Button functionality
+        tabButton.MouseButton1Click:Connect(function()
+            loadstring(loadStringCode)()
+        end)
+    end
+
+    -- Define loadstrings for each tab
+    local loadString1 = [[
+        -- Your loadstring code for Tab 1 here
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/flying"))()
+    ]]
+
+    local loadString2 = [[
+        -- Your loadstring code for Tab 2 here
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-MainLoader"))()
+    ]]
+
+    local loadString3 = [[
+        -- Your loadstring code for Tab 3 here
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-FireRateUnlegit"))()
+    ]]
+
+    local loadString4 = [[
+        -- Your loadstring code for Tab 4 here
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-MainLoader"))()
+    ]]
+
+    -- Creating tab buttons and their respective frames
+    local tabWidth = 80
+    local spacing = 10
+    local totalWidth = (tabWidth * 4) + (spacing * 3)
+    local startX = (TabButtonsFrame.AbsoluteSize.X - totalWidth) / 2
+
+    createTab(Tab1, UDim2.new(0, startX, 0, 0), "Tab 1", Tab1Frame, loadString1, "Execute Fly Script")
+    createTab(Tab2, UDim2.new(0, startX + tabWidth + spacing, 0, 0), "Tab 2", Tab2Frame, loadString2, "Execute Aimbot + ESP")
+    createTab(Tab3, UDim2.new(0, startX + 2 * (tabWidth + spacing), 0, 0), "Tab 3", Tab3Frame, loadString3, "Execute FireRate Changer")
+    createTab(Tab4, UDim2.new(0, startX + 3 * (tabWidth + spacing), 0, 0), "Tab 4", Tab4Frame, loadString4, "Execute Rivals Aimbot")
+
+    -- Function to handle tab selection
+    local function selectTab(tabName)
+        for _, child in ipairs(ContentFrame:GetChildren()) do
+            if child:IsA("Frame") and child.Name ~= tabName then
+                child.Visible = false
+            end
+        end
+        
+        local tabFrame = ContentFrame:FindFirstChild(tabName)
+        if tabFrame then
+            tabFrame.Visible = true
+        end
+    end
+
+    -- Connect tab buttons to show their respective frames
+    Tab1.MouseButton1Click:Connect(function() selectTab("Tab 1") end)
+    Tab2.MouseButton1Click:Connect(function() selectTab("Tab 2") end)
+    Tab3.MouseButton1Click:Connect(function() selectTab("Tab 3") end)
+    Tab4.MouseButton1Click:Connect(function() selectTab("Tab 4") end)
+
+    -- Initially select the first tab
+    selectTab("Tab 1")
+
+    -- Function to toggle GUI visibility
+    local function toggleGuiVisibility(input)
+        if input.KeyCode == Enum.KeyCode.RightShift then
+            ScreenGui.Enabled = not ScreenGui.Enabled
+        end
+    end
+
+    -- Connect the input event to the function
+    UserInputService.InputBegan:Connect(toggleGuiVisibility)
+end
+
+-- Call the function to create the UI
+createUI()
