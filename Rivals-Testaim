@@ -1,4 +1,6 @@
-local player = game.Players.LocalPlayer
+local player = game:FindFirstChild("Players") or game:FindFirstChild("Players - Client")
+if not player then return end
+player = player.LocalPlayer
 local mouse = player:GetMouse()
 local camera = game.Workspace.CurrentCamera
 local runService = game:GetService("RunService")
