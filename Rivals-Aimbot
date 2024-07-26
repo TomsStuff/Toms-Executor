@@ -1,17 +1,17 @@
--- Services
+--made by tom nigga
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
--- Local player
+
 local localPlayer = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 
--- Variables
+
 local isRightClickHeld = false
 local targetPlayer = nil
 
--- Functions
+
 local function getClosestPlayerToCenter()
     local closestPlayer = nil
     local shortestDistance = math.huge
@@ -44,7 +44,7 @@ local function lockCameraToHead()
     end
 end
 
--- Event Listeners
+
 UserInputService.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then
         isRightClickHeld = true
