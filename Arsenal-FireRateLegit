@@ -1,66 +1,97 @@
-
+-- Define the ReplicatedStorage and Players services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
+-- Store original fire rates in a table
+local originalFireRates = {}
 
-local function updateFireRates()
+-- Define the function to update FireRate values
+local function updateFireRates(newFireRate)
     -- Try to find the "Weapons" folder in ReplicatedStorage
     local weaponsFolder = ReplicatedStorage:FindFirstChild("Weapons")
 
-
+    -- Check if the "Weapons" folder was found
     if weaponsFolder then
         print("Weapons folder found!")
 
-       
+        -- Iterate through each child of the "Weapons" folder
         for _, weapon in pairs(weaponsFolder:GetChildren()) do
-            
+            -- Check if the child is a folder (assuming each weapon is stored in a folder)
             if weapon:IsA("Folder") then
-                
+                -- Try to find the FireRate value in the weapon folder
                 local fireRateValue = weapon:FindFirstChild("FireRate")
 
-                
+                -- Check if the FireRate value was found and is a NumberValue
                 if fireRateValue and fireRateValue:IsA("NumberValue") then
-                    
+                    -- Store original FireRate if not already stored
+                    if not originalFireRates[weapon.Name] then
+                        originalFireRates[weapon.Name] = fireRateValue.Value
+                    end
 
-                    
-                    local newFireRate = 0.1  -- Set this to the desired fire rate
+                    -- Update the FireRate value to the new value
                     fireRateValue.Value = newFireRate
-                    
+                    print("Updated FireRate for weapon: " .. weapon.Name .. " to value: " .. newFireRate)
                 else
-                   
+                    print("FireRate value not found or is not a NumberValue for weapon: " .. weapon.Name)
                 end
-            
+            else
+                print("Child is not a folder, skipping: " .. weapon.Name)
             end
         end
-  
+    else
+        print("Weapons folder not found.")
     end
 end
 
-
+-- Function to handle player respawn
 local function onPlayerRespawn(player)
-  
+    -- Connect to the character added event
     player.CharacterAdded:Connect(function(character)
         -- Wait for the humanoid to be added to the character
         local humanoid = character:WaitForChild("Humanoid")
         
-      
+        -- Connect to the died event of the humanoid
         humanoid.Died:Connect(function()
             print("Player died: " .. player.Name)
             
-           
-            player.CharacterAdded:Connect(function()
-                print("Player respawned: " .. player.Name)
-                updateFireRates()
-            end)
+            -- Set fire rates to the original values for all weapons
+            updateFireRates(0.1)  -- Set to default fire rate during player's death
+            
+            -- Wait for 1 second
+            wait(1)
+            
+            -- Revert the fire rates to the original values
+            for weaponName, originalFireRate in pairs(originalFireRates) do
+                local weaponFolder = ReplicatedStorage:FindFirstChild("Weapons")
+                if weaponFolder then
+                    local weapon = weaponFolder:FindFirstChild(weaponName)
+                    if weapon and weapon:IsA("Folder") then
+                        local fireRateValue = weapon:FindFirstChild("FireRate")
+                        if fireRateValue and fireRateValue:IsA("NumberValue") then
+                            fireRateValue.Value = originalFireRate
+                            print("Reverted FireRate for weapon: " .. weaponName .. " to value: " .. originalFireRate)
+                        end
+                    end
+                end
+            end
+            
+            -- Continuously check if the player is alive
+            while player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health <= 0 do
+                wait(1)  -- Check every second
+            end
+
+            -- Update the fire rates to the new values once the player is alive again
+            print("Player respawned: " .. player.Name)
+            updateFireRates(0.01)  -- Set to desired fire rate when player is alive
         end)
     end)
 end
 
-
+-- Set up the event listener for when a player is added
 Players.PlayerAdded:Connect(function(player)
- 
+    -- Set up the event listener for respawning and dying
     onPlayerRespawn(player)
 end)
 
-
-updateFireRates()
+-- Initial execution of the function when the game starts
+updateFireRates(0.1)  -- Set initial fire rate
