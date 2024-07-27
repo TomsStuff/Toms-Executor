@@ -71,57 +71,56 @@ local function createUI()
     ContentFrame.Visible = true
     ContentFrame.BorderSizePixel = 0 -- Remove border
 
-  -- Function to create tab buttons and frames
-local function createTab(button, position, text, tabFrame, buttons)
-    button.Parent = TabButtonsFrame
-    button.Size = UDim2.new(0, 80, 0, 30)
-    button.Position = position
-    button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Font = Enum.Font.SourceSans
-    button.TextSize = 18
-    button.Text = text
-    button.BorderSizePixel = 0 -- Remove border
+    -- Function to create tab buttons and frames
+    local function createTab(button, position, text, tabFrame, buttons)
+        button.Parent = TabButtonsFrame
+        button.Size = UDim2.new(0, 80, 0, 30)
+        button.Position = position
+        button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        button.Font = Enum.Font.SourceSans
+        button.TextSize = 18
+        button.Text = text
+        button.BorderSizePixel = 0 -- Remove border
 
-    -- Frame for the tab's content
-    tabFrame.Parent = ContentFrame
-    tabFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    tabFrame.Size = UDim2.new(1, 0, 1, 0)
-    tabFrame.Position = UDim2.new(0, 0, 0, 0)
-    tabFrame.Visible = false
-    tabFrame.Name = text
+        -- Frame for the tab's content
+        tabFrame.Parent = ContentFrame
+        tabFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        tabFrame.Size = UDim2.new(1, 0, 1, 0)
+        tabFrame.Position = UDim2.new(0, 0, 0, 0)
+        tabFrame.Visible = false
+        tabFrame.Name = text
 
-    -- Calculate the total height for buttons and the vertical position for each button
-    local totalButtonHeight = 0
-    local buttonSpacing = 10
-    for i, btnConfig in ipairs(buttons) do
-        totalButtonHeight = totalButtonHeight + 50 + buttonSpacing
+        -- Calculate the total height for buttons and the vertical position for each button
+        local totalButtonHeight = 0
+        local buttonSpacing = 10
+        for i, btnConfig in ipairs(buttons) do
+            totalButtonHeight = totalButtonHeight + 50 + buttonSpacing
+        end
+        totalButtonHeight = totalButtonHeight - buttonSpacing -- Adjust for last button
+
+        -- Position buttons to be centered
+        local startY = (tabFrame.AbsoluteSize.Y - totalButtonHeight) / 2
+
+        -- Add buttons to the tab frame
+        for i, btnConfig in ipairs(buttons) do
+            local tabButton = Instance.new("TextButton")
+            tabButton.Parent = tabFrame
+            tabButton.Size = UDim2.new(0, 177, 0, 50)
+            tabButton.Position = UDim2.new(0.5, -88.5, 0, startY + (i - 1) * (50 + buttonSpacing))
+            tabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            tabButton.Font = Enum.Font.SourceSans
+            tabButton.TextSize = 20
+            tabButton.Text = btnConfig.text
+            tabButton.BorderSizePixel = 0 -- Remove border
+
+            -- Button functionality
+            tabButton.MouseButton1Click:Connect(function()
+                loadstring(btnConfig.loadStringCode)()
+            end)
+        end
     end
-    totalButtonHeight = totalButtonHeight - buttonSpacing -- Adjust for last button
-
-    -- Position buttons to be centered
-    local startY = (tabFrame.AbsoluteSize.Y - totalButtonHeight) / 2
-
-    -- Add buttons to the tab frame
-    for i, btnConfig in ipairs(buttons) do
-        local tabButton = Instance.new("TextButton")
-        tabButton.Parent = tabFrame
-        tabButton.Size = UDim2.new(0, 177, 0, 50)
-        tabButton.Position = UDim2.new(0.5, -88.5, 0, startY + (i - 1) * (50 + buttonSpacing))
-        tabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        tabButton.Font = Enum.Font.SourceSans
-        tabButton.TextSize = 20
-        tabButton.Text = btnConfig.text
-        tabButton.BorderSizePixel = 0 -- Remove border
-
-        -- Button functionality
-        tabButton.MouseButton1Click:Connect(function()
-            loadstring(btnConfig.loadStringCode)()
-        end)
-    end
-end
-
 
     -- Define button configurations for each tab
     local tab1Buttons = {
@@ -131,7 +130,7 @@ end
         {text = "Infinite Ammo", loadStringCode = [[
             loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-InfAmmo"))()
         ]]},
-         {text = "Fire Rate", loadStringCode = [[
+        {text = "Fire Rate", loadStringCode = [[
             loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-FireRateUnlegit"))()
          ]]}
     }
@@ -174,6 +173,9 @@ end
     createTab(Tab3, UDim2.new(0, startX + 2 * (tabWidth + spacing), 0, 0), "Fun", Tab3Frame, tab3Buttons)
     createTab(Tab4, UDim2.new(0, startX + 3 * (tabWidth + spacing), 0, 0), "Universal", Tab4Frame, tab4Buttons)
 
+    -- Variable to track selected tab
+    local selectedTabButton
+
     -- Function to handle tab selection
     local function selectTab(tabName)
         for _, child in ipairs(ContentFrame:GetChildren()) do
@@ -185,6 +187,18 @@ end
         local tabFrame = ContentFrame:FindFirstChild(tabName)
         if tabFrame then
             tabFrame.Visible = true
+        end
+
+        -- Update tab button colors
+        for _, tabButton in ipairs(TabButtonsFrame:GetChildren()) do
+            if tabButton:IsA("TextButton") then
+                if tabButton.Text == tabName then
+                    tabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80) -- Darker color for selected tab
+                    selectedTabButton = tabButton
+                else
+                    tabButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60) -- Default color for unselected tabs
+                end
+            end
         end
     end
 
