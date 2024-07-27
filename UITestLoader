@@ -71,80 +71,95 @@ local function createUI()
     ContentFrame.Visible = true
     ContentFrame.BorderSizePixel = 0 -- Remove border
 
-    -- Function to create tab buttons and frames
-    local function createTab(button, position, text, tabFrame, buttons)
-        button.Parent = TabButtonsFrame
-        button.Size = UDim2.new(0, 80, 0, 30)
-        button.Position = position
-        button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        button.TextColor3 = Color3.fromRGB(255, 255, 255)
-        button.Font = Enum.Font.SourceSans
-        button.TextSize = 18
-        button.Text = text
-        button.BorderSizePixel = 0 -- Remove border
+  -- Function to create tab buttons and frames
+local function createTab(button, position, text, tabFrame, buttons)
+    button.Parent = TabButtonsFrame
+    button.Size = UDim2.new(0, 80, 0, 30)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Font = Enum.Font.SourceSans
+    button.TextSize = 18
+    button.Text = text
+    button.BorderSizePixel = 0 -- Remove border
 
-        -- Frame for the tab's content
-        tabFrame.Parent = ContentFrame
-        tabFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        tabFrame.Size = UDim2.new(1, 0, 1, 0)
-        tabFrame.Position = UDim2.new(0, 0, 0, 0)
-        tabFrame.Visible = false
-        tabFrame.Name = text
+    -- Frame for the tab's content
+    tabFrame.Parent = ContentFrame
+    tabFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    tabFrame.Size = UDim2.new(1, 0, 1, 0)
+    tabFrame.Position = UDim2.new(0, 0, 0, 0)
+    tabFrame.Visible = false
+    tabFrame.Name = text
 
-        -- Add buttons to the tab frame
-        for i, btnConfig in ipairs(buttons) do
-            local tabButton = Instance.new("TextButton")
-            tabButton.Parent = tabFrame
-            tabButton.Size = UDim2.new(0, 177, 0, 50)
-            tabButton.Position = UDim2.new(0.5, -75, 0, (i - 1) * 60)
-            tabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-            tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-            tabButton.Font = Enum.Font.SourceSans
-            tabButton.TextSize = 20
-            tabButton.Text = btnConfig.text
-            tabButton.BorderSizePixel = 0 -- Remove border
-
-            -- Button functionality
-            tabButton.MouseButton1Click:Connect(function()
-                loadstring(btnConfig.loadStringCode)()
-            end)
-        end
+    -- Calculate the total height for buttons and the vertical position for each button
+    local totalButtonHeight = 0
+    local buttonSpacing = 10
+    for i, btnConfig in ipairs(buttons) do
+        totalButtonHeight = totalButtonHeight + 50 + buttonSpacing
     end
+    totalButtonHeight = totalButtonHeight - buttonSpacing -- Adjust for last button
+
+    -- Position buttons to be centered
+    local startY = (tabFrame.AbsoluteSize.Y - totalButtonHeight) / 2
+
+    -- Add buttons to the tab frame
+    for i, btnConfig in ipairs(buttons) do
+        local tabButton = Instance.new("TextButton")
+        tabButton.Parent = tabFrame
+        tabButton.Size = UDim2.new(0, 177, 0, 50)
+        tabButton.Position = UDim2.new(0.5, -88.5, 0, startY + (i - 1) * (50 + buttonSpacing))
+        tabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        tabButton.Font = Enum.Font.SourceSans
+        tabButton.TextSize = 20
+        tabButton.Text = btnConfig.text
+        tabButton.BorderSizePixel = 0 -- Remove border
+
+        -- Button functionality
+        tabButton.MouseButton1Click:Connect(function()
+            loadstring(btnConfig.loadStringCode)()
+        end)
+    end
+end
+
 
     -- Define button configurations for each tab
     local tab1Buttons = {
-        {text = "Execute Fly Script", loadStringCode = [[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/flying"))()
+        {text = "Aimbot + ESP", loadStringCode = [[
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-MainLoader"))()
         ]]},
-        {text = "Another Button", loadStringCode = [[
-            print("hi")
-        ]]}
+        {text = "Infinite Ammo", loadStringCode = [[
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-InfAmmo"))()
+        ]]},
+         {text = "Fire Rate", loadStringCode = [[
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-FireRateUnlegit"))()
+         ]]}
     }
 
     local tab2Buttons = {
-        {text = "Execute Aimbot + ESP", loadStringCode = [[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-MainLoader"))()
+         {text = "Aimbot + ESP", loadStringCode = [[
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-MainLoader"))()
         ]]},
-        {text = "Another Button", loadStringCode = [[
-            print("hi")
-        ]]}
     }
 
     local tab3Buttons = {
-        {text = "Execute FireRate Changer", loadStringCode = [[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-FireRateUnlegit"))()
+        {text = "Walkspeed 30", loadStringCode = [[
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/SpeedChanger"))()
         ]]},
-        {text = "Infinite Ammo", loadStringCode = [[
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-InfAmmo"))()
+        {text = "Spinbot", loadStringCode = [[
+           loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/spinbott"))()
         ]]}
     }
 
     local tab4Buttons = {
-        {text = "Execute Rivals Aimbot", loadStringCode = [[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-MainLoader"))()
+        {text = "Fly", loadStringCode = [[
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/flying"))()
         ]]},
-        {text = "Another Button", loadStringCode = [[
-           print("o")
+        {text = "Aimbot (NO ESP)", loadStringCode = [[
+           loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/gurraim"))()
+        ]]},
+        {text = "Noclip", loadStringCode = [[
+           loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/noclip"))()
         ]]}
     }
 
@@ -154,10 +169,10 @@ local function createUI()
     local totalWidth = (tabWidth * 4) + (spacing * 3)
     local startX = (TabButtonsFrame.AbsoluteSize.X - totalWidth) / 2
 
-    createTab(Tab1, UDim2.new(0, startX, 0, 0), "Tab 1", Tab1Frame, tab1Buttons)
-    createTab(Tab2, UDim2.new(0, startX + tabWidth + spacing, 0, 0), "Tab 2", Tab2Frame, tab2Buttons)
-    createTab(Tab3, UDim2.new(0, startX + 2 * (tabWidth + spacing), 0, 0), "Tab 3", Tab3Frame, tab3Buttons)
-    createTab(Tab4, UDim2.new(0, startX + 3 * (tabWidth + spacing), 0, 0), "Tab 4", Tab4Frame, tab4Buttons)
+    createTab(Tab1, UDim2.new(0, startX, 0, 0), "Arsenal", Tab1Frame, tab1Buttons)
+    createTab(Tab2, UDim2.new(0, startX + tabWidth + spacing, 0, 0), "Rivals", Tab2Frame, tab2Buttons)
+    createTab(Tab3, UDim2.new(0, startX + 2 * (tabWidth + spacing), 0, 0), "Fun", Tab3Frame, tab3Buttons)
+    createTab(Tab4, UDim2.new(0, startX + 3 * (tabWidth + spacing), 0, 0), "Universal", Tab4Frame, tab4Buttons)
 
     -- Function to handle tab selection
     local function selectTab(tabName)
@@ -174,13 +189,13 @@ local function createUI()
     end
 
     -- Connect tab buttons to show their respective frames
-    Tab1.MouseButton1Click:Connect(function() selectTab("Tab 1") end)
-    Tab2.MouseButton1Click:Connect(function() selectTab("Tab 2") end)
-    Tab3.MouseButton1Click:Connect(function() selectTab("Tab 3") end)
-    Tab4.MouseButton1Click:Connect(function() selectTab("Tab 4") end)
+    Tab1.MouseButton1Click:Connect(function() selectTab("Arsenal") end)
+    Tab2.MouseButton1Click:Connect(function() selectTab("Rivals") end)
+    Tab3.MouseButton1Click:Connect(function() selectTab("Fun") end)
+    Tab4.MouseButton1Click:Connect(function() selectTab("Universal") end)
 
     -- Initially select the first tab
-    selectTab("Tab 1")
+    selectTab("Arsenal")
 
     -- Function to toggle GUI visibility
     local function toggleGuiVisibility(input)
