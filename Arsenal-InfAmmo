@@ -86,3 +86,6 @@ Players.PlayerAdded:Connect(onPlayerSpawn)
 for _, player in pairs(Players:GetPlayers()) do
     onPlayerSpawn(player)
 end
+
+-- Run the updateAmmoValues function immediately when the script is executed
+updateAmmoValues(600) -- Replace 600 with the desired Ammo value that you want to set
