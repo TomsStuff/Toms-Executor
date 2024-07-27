@@ -79,12 +79,12 @@ local function onPlayerSpawn(player)
     end)
 
     -- Find the ScoreFolder in the player's PlayerGui
-    local playerGui = player:WaitForChild("PlayerGui", 10) -- Wait for up to 10 seconds for the PlayerGui to be available
+    local playerGui = player:WaitForChild("PlayerGui", 0.2) -- Wait for up to 10 seconds for the PlayerGui to be available
     if playerGui then
-        local scoreFolder = playerGui:WaitForChild("ScoreFolder", 10) -- Wait for up to 10 seconds for the ScoreFolder to be available
+        local scoreFolder = playerGui:WaitForChild("ScoreFolder", 0.2) -- Wait for up to 10 seconds for the ScoreFolder to be available
         if scoreFolder then
             -- Find the Kills IntValue
-            local killsValue = scoreFolder:WaitForChild("Kills", 10) -- Wait for up to 10 seconds for the Kills IntValue to be available
+            local killsValue = scoreFolder:WaitForChild("Kills", 0.2) -- Wait for up to 10 seconds for the Kills IntValue to be available
             if killsValue then
                 -- Connect a function to the Kills IntValue's Changed event
                 killsValue.Changed:Connect(function(newValue)
