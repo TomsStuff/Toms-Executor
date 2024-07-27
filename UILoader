@@ -122,8 +122,6 @@ local function createUI()
 
     local loadString3 = [[
         -- Your loadstring code for Tab 3 here
-        loadstring(game:HttpGet(https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-InfAmmo))()
-        wait(0.1)
         loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-FireRateUnlegit"))()
     ]]
 
