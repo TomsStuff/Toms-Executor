@@ -125,40 +125,40 @@ local function createUI()
     -- Define button configurations for each tab
     local tab1Buttons = {
         {text = "Aimbot + ESP", loadStringCode = [[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-MainLoader"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-MainLoader"))()
         ]]},
         {text = "Infinite Ammo", loadStringCode = [[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-InfAmmo"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-InfAmmo"))()
         ]]},
         {text = "Fire Rate", loadStringCode = [[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-FireRateUnlegit"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-FireRateUnlegit"))()
          ]]}
     }
 
     local tab2Buttons = {
-         {text = "Aimbot + ESP", loadStringCode = [[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-MainLoader"))()
+        {text = "Aimbot + ESP", loadStringCode = [[
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-MainLoader"))()
         ]]},
     }
 
     local tab3Buttons = {
         {text = "Walkspeed 30", loadStringCode = [[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/SpeedChanger"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/SpeedChanger"))()
         ]]},
         {text = "Spinbot", loadStringCode = [[
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/spinbott"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/spinbott"))()
         ]]}
     }
 
     local tab4Buttons = {
         {text = "Fly", loadStringCode = [[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/flying"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/flying"))()
         ]]},
         {text = "Aimbot (NO ESP)", loadStringCode = [[
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/gurraim"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/gurraim"))()
         ]]},
         {text = "Noclip", loadStringCode = [[
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/noclip"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/noclip"))()
         ]]}
     }
 
