@@ -1,5 +1,4 @@
-loadstring(game:HttpGet(https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-InfAmmo))()
-wait(0.1)
+
 -- Define the services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
