@@ -1,0 +1,20 @@
+
+
+local function applyFullbright()
+    
+    local lighting = game:GetService("Lighting")
+
+  
+    lighting.Brightness = 2 -- Increase brightness
+    lighting.ClockTime = 12 -- Set time to noon
+    lighting.GlobalShadows = false -- Disable shadows
+    lighting.OutdoorAmbient = Color3.new(1, 1, 1) -- Set ambient light to full white
+    lighting.ColorShift_Bottom = Color3.new(1, 1, 1) -- Shift bottom color to white
+    lighting.ColorShift_Top = Color3.new(1, 1, 1) -- Shift top color to white
+end
+
+
+applyFullbright()
+
+
+game:GetService("Lighting").Changed:Connect(applyFullbright)
