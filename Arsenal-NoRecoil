@@ -33,9 +33,9 @@ local function updateAmmoValues(newAmmo)
 
                     -- Update Ammo value
                     ammoValue.Value = newAmmo
-                    print("Updated Ammo for weapon: " .. weapon.Name .. " to value: " .. newAmmo)
+                    print("Updated Recoil for weapon: " .. weapon.Name .. " to value: " .. newAmmo)
                 else
-                    print("Ammo value not found or is not a NumberValue for weapon: " .. weapon.Name)
+                    print("Recoil value not found or is not a NumberValue for weapon: " .. weapon.Name)
                 end
             else
                 print("Child is not a folder, skipping: " .. weapon.Name)
@@ -54,7 +54,7 @@ local function resetAmmoValues()
         local ammoValue = weapon:FindFirstChild("RecoilControl")
         if ammoValue and ammoValue:IsA("NumberValue") then
             ammoValue.Value = originalValue
-            print("Reset Ammo for weapon: " .. weapon.Name .. " to value: " .. originalValue)
+            print("Reset Recoil for weapon: " .. weapon.Name .. " to value: " .. originalValue)
         end
     end
     -- Clear the stored values after resetting
