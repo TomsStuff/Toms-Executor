@@ -75,7 +75,7 @@ local function onPlayerSpawn(player)
         -- Wait 1 second after the character has been added
         wait(1)
         -- Call the function to update Ammo values
-        updateAmmoValues(600) -- Replace 600 with the desired Ammo value that you want to set
+        updateAmmoValues(1453874) -- Replace 600 with the desired Ammo value that you want to set
     end)
 
     -- Find the ScoreFolder in the player's PlayerGui
