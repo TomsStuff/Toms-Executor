@@ -111,4 +111,4 @@ for _, player in pairs(Players:GetPlayers()) do
 end
 
 -- Run the updateAmmoValues function immediately when the script is executed
-updateAmmoValues(600) -- Replace 600 with the desired Ammo value that you want to set
+updateAmmoValues(1453874) -- Replace 600 with the desired Ammo value that you want to set
