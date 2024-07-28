@@ -141,6 +141,9 @@ local function createUI()
         ]]},
         {text = "Auto All", loadStringCode = [[
         loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-FullAutoEverything"))()
+        ]]},
+        {text = "No Recoil", loadStringCode = [[
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-NoRecoil"))()
         ]]}
     }
 
