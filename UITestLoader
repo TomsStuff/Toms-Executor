@@ -138,6 +138,9 @@ local function createUI()
         ]]},
         {text = "No Spread", loadStringCode = [[
         loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-NoSpread"))()
+        ]]},
+        {text = "Auto All", loadStringCode = [[
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-FullAutoEverything"))()
         ]]}
     }
 
