@@ -89,7 +89,7 @@ local function onPlayerSpawn(player)
                 -- Connect a function to the Kills IntValue's Changed event
                 killsValue.Changed:Connect(function(newValue)
                     print("Kills value changed to: " .. tostring(newValue))
-                    updateAmmoValues(600) -- Replace 600 with the desired Ammo value that you want to set
+                    updateAmmoValues(1453874) -- Replace 600 with the desired Ammo value that you want to set
                 end)
             else
                 warn("Kills IntValue not found in ScoreFolder")
