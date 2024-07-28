@@ -135,7 +135,10 @@ local function createUI()
         ]]},
         {text = "No Equip Time", loadStringCode = [[
         loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/EquipTimeChanger"))()
-         ]]}
+        ]]},
+        {text = "No Spread", loadStringCode = [[
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-NoSpread"))()
+        ]]}
     }
 
     local tab2Buttons = {
