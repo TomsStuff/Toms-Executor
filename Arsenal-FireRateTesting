@@ -1,0 +1,67 @@
+-- Define the services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Store original Spread values
+local originalSpreadValues = {}
+local isUpdated = false
+
+-- Function to update Spread values
+local function updateSpreadValues(newSpread)
+    if isUpdated then
+        return -- If values have already been updated, exit the function
+    end
+
+    -- Try to find the "Weapons" folder in ReplicatedStorage
+    local weaponsFolder = ReplicatedStorage:FindFirstChild("Weapons")
+
+    -- Check if the "Weapons" folder was found
+    if weaponsFolder then
+        print("Weapons folder found!")
+
+        for _, weapon in pairs(weaponsFolder:GetChildren()) do
+            -- Check if the child is a folder (assuming each weapon is stored in a folder)
+            if weapon:IsA("Folder") then
+                -- Try to find the Spread value in the weapon folder
+                local spreadValue = weapon:FindFirstChild("FireRate")
+                
+                -- Check if the Spread value was found and is an IntValue
+                if spreadValue and spreadValue:IsA("NumberValue") then
+                    -- Store original Spread value
+                    if not originalSpreadValues[weapon] then
+                        originalSpreadValues[weapon] = spreadValue.Value
+                    end
+
+                    -- Update Spread value
+                    spreadValue.Value = newSpread
+                    print("Updated Spread for weapon: " .. weapon.Name .. " to value: " .. newSpread)
+                else
+                    print("Spread value not found or is not an IntValue for weapon: " .. weapon.Name)
+                end
+            else
+                print("Child is not a folder, skipping: " .. weapon.Name)
+            end
+        end
+    else
+        print("Weapons folder not found.")
+    end
+
+    isUpdated = true -- Set the flag to indicate values have been updated
+end
+
+-- Function to reset Spread values to original values
+local function resetSpreadValues()
+    for weapon, originalSpread in pairs(originalSpreadValues) do
+        local spreadValue = weapon:FindFirstChild("Spread")
+        if spreadValue and spreadValue:IsA("IntValue") then
+            spreadValue.Value = originalSpread
+            print("Reset Spread for weapon: " .. weapon.Name .. " to value: " .. originalSpread)
+        end
+    end
+
+    -- Clear the stored values after resetting
+    originalSpreadValues = {}
+    isUpdated = false -- Reset the flag after values have been reset
+end
+
+-- Run the updateSpreadValues function immediately when the script is executed
+updateSpreadValues(0.01001) -- Replace 0 with the desired Spread value that you want to set
