@@ -130,7 +130,7 @@ local function createUI()
         {text = "Infinite Ammo", loadStringCode = [[
         loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-InfAmmo"))()
         ]]},
-        {text = "Fire Rate (a little buggy)", loadStringCode = [[
+        {text = "Fire Rate", loadStringCode = [[
         loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Arsenal-FireRateTesting"))()
         ]]},
         {text = "No Equip Time", loadStringCode = [[
