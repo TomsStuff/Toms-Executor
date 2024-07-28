@@ -1,0 +1,66 @@
+-- Define the services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Store original Ammo values
+local originalAmmoValues = {}
+local isUpdated = false
+
+-- Function to update Ammo values
+local function updateAmmoValues(newAmmo)
+    if isUpdated then
+        return -- If Ammo values have already been updated, exit the function
+    end
+    
+    -- Try to find the "Weapons" folder in ReplicatedStorage
+    local weaponsFolder = ReplicatedStorage:FindFirstChild("Weapons")
+
+    -- Check if the "Weapons" folder was found
+    if weaponsFolder then
+        print("Weapons folder found!")
+
+        for _, weapon in pairs(weaponsFolder:GetChildren()) do
+            -- Check if the child is a folder (assuming each weapon is stored in a folder)
+            if weapon:IsA("Folder") then
+                -- Try to find the Ammo value in the weapon folder
+                local ammoValue = weapon:FindFirstChild("RecoilControl")
+
+                -- Check if the Ammo value was found and is a NumberValue
+                if ammoValue and ammoValue:IsA("NumberValue") then
+                    -- Store original Ammo value
+                    if not originalAmmoValues[weapon] then
+                        originalAmmoValues[weapon] = ammoValue.Value
+                    end
+
+                    -- Update Ammo value
+                    ammoValue.Value = newAmmo
+                    print("Updated Ammo for weapon: " .. weapon.Name .. " to value: " .. newAmmo)
+                else
+                    print("Ammo value not found or is not a NumberValue for weapon: " .. weapon.Name)
+                end
+            else
+                print("Child is not a folder, skipping: " .. weapon.Name)
+            end
+        end
+    else
+        print("Weapons folder not found.")
+    end
+
+    isUpdated = true -- Set the flag to indicate Ammo values have been updated
+end
+
+-- Function to reset Ammo values to original values
+local function resetAmmoValues()
+    for weapon, originalValue in pairs(originalAmmoValues) do
+        local ammoValue = weapon:FindFirstChild("RecoilControl")
+        if ammoValue and ammoValue:IsA("NumberValue") then
+            ammoValue.Value = originalValue
+            print("Reset Ammo for weapon: " .. weapon.Name .. " to value: " .. originalValue)
+        end
+    end
+    -- Clear the stored values after resetting
+    originalAmmoValues = {}
+    isUpdated = false -- Reset the flag after Ammo values have been reset
+end
+
+-- Run the updateAmmoValues function immediately when the script is executed
+updateAmmoValues(0) -- Replace 0 with the desired Ammo value that you want to set
