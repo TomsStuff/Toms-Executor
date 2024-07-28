@@ -1,0 +1,95 @@
+-- Define the services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+-- Store original FireRate values
+local originalFireRates = {}
+local isUpdated = false
+
+-- Function to update FireRates
+local function updateFireRates(newFireRate)
+    if isUpdated then
+        return -- If FireRates have already been updated, exit the function
+    end
+
+    -- Ensure the new FireRate is a positive value greater than zero to avoid any issues
+    if newFireRate <= 0 then
+        warn("FireRate must be a positive value greater than 0.")
+        return
+    end
+
+    -- Try to find the "Weapons" folder in ReplicatedStorage
+    local weaponsFolder = ReplicatedStorage:FindFirstChild("Weapons")
+
+    -- Check if the "Weapons" folder was found
+    if weaponsFolder then
+        print("Weapons folder found!")
+
+        for _, weapon in pairs(weaponsFolder:GetChildren()) do
+            -- Check if the child is a folder (assuming each weapon is stored in a folder)
+            if weapon:IsA("Folder") then
+                -- Try to find the Auto value in the weapon folder
+                local autoValue = weapon:FindFirstChild("Auto")
+
+                -- Check if the Auto value was found and is a BoolValue
+                if autoValue and autoValue:IsA("BoolValue") then
+                    -- Store original Auto value
+                    if not originalFireRates[weapon] then
+                        originalFireRates[weapon] = autoValue.Value
+                    end
+
+                    -- Remove the existing Auto value
+                    autoValue:Destroy()
+                    print("Deleted old Auto value for weapon: " .. weapon.Name)
+                else
+                    print("Auto value not found or is not a BoolValue for weapon: " .. weapon.Name)
+                end
+
+                -- Create a new BoolValue named "Auto" and set its value to true
+                local newAutoValue = Instance.new("BoolValue")
+                newAutoValue.Name = "Auto"
+                newAutoValue.Value = true
+                newAutoValue.Parent = weapon
+                print("Created new Auto value for weapon: " .. weapon.Name .. " with value: true")
+            else
+                print("Child is not a folder, skipping: " .. weapon.Name)
+            end
+        end
+    else
+        print("Weapons folder not found.")
+    end
+
+    isUpdated = true -- Set the flag to indicate Auto values have been updated
+end
+
+-- Function to reset Auto values to original values
+local function resetAutoValues()
+    for weapon, originalValue in pairs(originalFireRates) do
+        local autoValue = weapon:FindFirstChild("Auto")
+        if autoValue and autoValue:IsA("BoolValue") then
+            autoValue.Value = originalValue
+            print("Reset Auto value for weapon: " .. weapon.Name .. " to value: " .. originalValue)
+        end
+    end
+    -- Clear the stored values after resetting
+    originalFireRates = {}
+    isUpdated = false -- Reset the flag after Auto values have been reset
+end
+
+-- Function to handle player spawn
+local function onPlayerSpawn(player)
+    player.CharacterAdded:Connect(function(character)
+        -- Wait 0.1 second after the character has been added
+        wait(0.1)
+        -- Call the function to update Auto values
+        updateFireRates(0.05) -- Replace 0.05 with the desired Auto value that you want to test
+    end)
+end
+
+-- Connect PlayerAdded event to handle new players
+Players.PlayerAdded:Connect(onPlayerSpawn)
+
+-- Optional: Handle existing players if the script runs after some players have already joined
+for _, player in pairs(Players:GetPlayers()) do
+    onPlayerSpawn(player)
+end
