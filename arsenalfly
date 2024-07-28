@@ -39,9 +39,7 @@ local Sprinting = false
 local CameraPos = game.Workspace.CurrentCamera.CFrame.Position
 local KeyStates = {}
 
-pcall(function()
-    game.Players.LocalPlayer.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Invisicam
-end)
+
 
 function Lerp(a, b, t)
     return a + (b - a) * t
