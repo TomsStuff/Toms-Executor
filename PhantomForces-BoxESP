@@ -1,0 +1,95 @@
+--// services
+
+local run_service = game:GetService("RunService")
+local teams = game:GetService("Teams")
+local plr_service = game:GetService("Players")
+
+--// tables
+
+local features = {
+    box = {
+        borderColor = Color3.fromRGB(255, 0, 0),
+        borderSizePixel = 2, -- Border thickness
+        height = 5.5, -- Fixed height in studs
+        width = 2.5, -- Fixed width in studs
+        depth = 5.5, -- Fixed depth in studs
+        padding = 2 -- Additional padding around the player
+    }
+}
+
+--// functions
+
+function get_players()
+    local entity_list = {}
+    for _, team in ipairs(workspace.Players:GetChildren()) do
+        for _, player in ipairs(team:GetChildren()) do
+            if player:IsA("Model") then
+                table.insert(entity_list, player)
+            end
+        end
+    end
+    return entity_list
+end
+
+function is_ally(player)
+    if not player then
+        return false
+    end
+
+    local helmet = player:FindFirstChildWhichIsA("Folder"):FindFirstChildOfClass("MeshPart")
+    if not helmet then
+        return false
+    end
+
+    -- Assume `Black` as a color name
+    local playerColor = helmet.BrickColor.Name
+    local localPlayerTeam = plr_service.LocalPlayer.Team
+
+    if playerColor == "Black" then
+        return localPlayerTeam == teams:FindFirstChild("Phantoms")
+    end
+
+    return localPlayerTeam == teams:FindFirstChild("Ghosts")
+end
+
+--// logic
+
+run_service.RenderStepped:Connect(function(delta)
+    for _, player in ipairs(get_players()) do
+        if not player:FindFirstChildWhichIsA("Highlight") then
+            local isAlly = is_ally(player)
+
+            -- Only target enemies
+            if not isAlly then
+                -- Create or update BillboardGui
+                local billboardGui = player:FindFirstChild("BillboardGui") or Instance.new("BillboardGui")
+                billboardGui.Name = "BillboardGui"
+                billboardGui.Parent = player
+                billboardGui.Adornee = player:FindFirstChild("HumanoidRootPart") -- Ensure this points to the right part
+                billboardGui.AlwaysOnTop = true
+
+                -- Set BillboardGui size
+                local guiSizeX = features.box.width + features.box.padding * 2
+                local guiSizeY = features.box.height + features.box.padding * 2
+                billboardGui.Size = UDim2.new(guiSizeX / 10, 0, guiSizeY / 10, 0) -- Adjust scaling factor as needed
+                
+                -- Create or update Frame
+                local frame = billboardGui:FindFirstChild("Frame") or Instance.new("Frame")
+                frame.Name = "Frame"
+                frame.Parent = billboardGui
+                frame.Size = UDim2.new(5.5, 0, 5.5, 0) -- Fill the entire BillboardGui
+                frame.Position = UDim2.new(0.5, 0, 0.5, 0) -- Center the frame in the middle of BillboardGui
+                frame.AnchorPoint = Vector2.new(0.5, 0.5) -- Anchor in the center
+                frame.BackgroundTransparency = 1 -- Make the background transparent
+
+                -- Create or update UIStroke
+                local uiStroke = frame:FindFirstChild("UIStroke") or Instance.new("UIStroke")
+                uiStroke.Name = "UIStroke"
+                uiStroke.Parent = frame
+                uiStroke.Color = features.box.borderColor
+                uiStroke.Thickness = features.box.borderSizePixel
+                uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            end
+        end
+    end
+end)
