@@ -6,7 +6,7 @@ local ToggleKey = Enum.KeyCode.K
 local ESPElements = {} -- To keep track of ESP elements
 local TeamsToIgnore = {"TRC", "TBC"} -- Initial list of team names to ignore
 local UpdateInterval = 10  -- Interval for updating ESP (in seconds)
-local RemoveESPInterval = 2 -- Interval for removing ESP elements (in seconds)
+local RemoveESPInterval = 0.2 -- Interval for removing ESP elements (in seconds)
 
 -- Function to create a highlight box around a part
 local function createHighlightBox(part)
