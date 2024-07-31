@@ -1,5 +1,3 @@
-
-
 -- Variables
 local ESPEnabled = true  -- ESP is enabled by default
 local ToggleKey = Enum.KeyCode.K
@@ -12,7 +10,7 @@ local RemoveESPInterval = 0.2 -- Interval for removing ESP elements (in seconds)
 local function createHighlightBox(part)
     local box = Instance.new("BoxHandleAdornment")
     box.Size = part.Size
-    box.Color3 = Color3.new(255, 255, 255) -- White color
+    box.Color3 = Color3.new(1, 0, 1) -- White color
     box.Transparency = 0.5
     box.AlwaysOnTop = true
     box.ZIndex = 10
@@ -36,7 +34,7 @@ local function createNameLabel(character)
         local text = Instance.new("TextLabel")
         text.Size = UDim2.new(1, 0, 1, 0)
         text.BackgroundTransparency = 1
-        text.TextColor3 = Color3.new(255, 255, 255)
+        text.TextColor3 = Color3.new(1, 0, 1)
         text.TextStrokeTransparency = 0.5
         text.TextStrokeColor3 = Color3.new(0, 0, 0)
         text.Text = character.Name
