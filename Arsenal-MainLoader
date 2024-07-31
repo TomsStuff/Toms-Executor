@@ -6,5 +6,5 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Duration = 5,  -- Notification will be displayed for 5 seconds
     Button1 = "OK"
 })
-loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/cumming~ >w<"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/cumming~%20>w<"))()
 loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/EspArsenal'))()
