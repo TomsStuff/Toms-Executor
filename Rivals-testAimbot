@@ -1,5 +1,4 @@
--- made by tom nigga
-local Players = game:GetService("Players") or game:GetService("Players - Client")
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -8,7 +7,7 @@ local camera = workspace.CurrentCamera
 
 local isRightClickHeld = false
 local targetPlayer = nil
-local lockBodyPart = "Head"  -- Default body part to lock onto
+local lockBodyPart = "Head"  -- Default body part to lock onto, will be updated dynamically
 
 -- Function to find the index of a value in a table
 local function tableFind(tbl, value)
@@ -20,7 +19,7 @@ local function tableFind(tbl, value)
     return nil
 end
 
--- Function to get the closest player to the center of the screen, focusing on the current lockBodyPart
+-- Function to get the closest player and the closest body part to the center of the screen
 local function getClosestPlayerToCenter()
     local closestPlayer = nil
     local closestPart = nil
@@ -51,18 +50,19 @@ local function getClosestPlayerToCenter()
                 character:FindFirstChild("RightHand")
             }
             
-            local partToLock = character:FindFirstChild(lockBodyPart)
-            if partToLock then
-                local partPosition, onScreen = camera:WorldToViewportPoint(partToLock.Position)
-                
-                if onScreen then
-                    local screenPosition = Vector2.new(partPosition.X, partPosition.Y)
-                    local distance = (screenPosition - screenCenter).Magnitude
+            for _, part in ipairs(bodyParts) do
+                if part then
+                    local partPosition, onScreen = camera:WorldToViewportPoint(part.Position)
                     
-                    if distance < shortestDistance then
-                        closestPlayer = player
-                        closestPart = partToLock
-                        shortestDistance = distance
+                    if onScreen then
+                        local screenPosition = Vector2.new(partPosition.X, partPosition.Y)
+                        local distance = (screenPosition - screenCenter).Magnitude
+                        
+                        if distance < shortestDistance then
+                            shortestDistance = distance
+                            closestPlayer = player
+                            closestPart = part
+                        end
                     end
                 end
             end
@@ -72,10 +72,10 @@ local function getClosestPlayerToCenter()
     return closestPlayer, closestPart
 end
 
--- Function to lock the camera to the selected body part
+-- Function to lock the camera to the closest body part
 local function lockCameraToPart()
-    if targetPlayer and targetPlayer.Character then
-        local bodyPart = targetPlayer.Character:FindFirstChild(lockBodyPart)
+    if targetPlayer and targetPlayer.Character and closestPart then
+        local bodyPart = closestPart
         if bodyPart then
             camera.CFrame = CFrame.new(camera.CFrame.Position, bodyPart.Position)
         end
@@ -86,7 +86,7 @@ end
 UserInputService.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then
         isRightClickHeld = true
-        targetPlayer, _ = getClosestPlayerToCenter()
+        targetPlayer, closestPart = getClosestPlayerToCenter()
     end
 end)
 
@@ -94,12 +94,14 @@ UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then
         isRightClickHeld = false
         targetPlayer = nil
+        closestPart = nil
     end
 end)
 
 -- Handle the camera update
 RunService.RenderStepped:Connect(function()
     if isRightClickHeld then
+        targetPlayer, closestPart = getClosestPlayerToCenter()
         lockCameraToPart()
     end
 end)
