@@ -1,0 +1,120 @@
+-- made by tom nigga
+local Players = game:GetService("Players") or game:GetService("Players - Client")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local localPlayer = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+local isRightClickHeld = false
+local targetPlayer = nil
+local lockBodyPart = "Head"  -- Default body part to lock onto
+
+-- Function to find the index of a value in a table
+local function tableFind(tbl, value)
+    for index, val in ipairs(tbl) do
+        if val == value then
+            return index
+        end
+    end
+    return nil
+end
+
+-- Function to get the closest player to the center of the screen, focusing on the current lockBodyPart
+local function getClosestPlayerToCenter()
+    local closestPlayer = nil
+    local closestPart = nil
+    local shortestDistance = math.huge
+    local screenCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= localPlayer and player.Character then
+            local character = player.Character
+            local bodyParts = {
+                character:FindFirstChild("Head"),
+                character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso") or character:FindFirstChild("LowerTorso"),
+                character:FindFirstChild("LeftLeg"),
+                character:FindFirstChild("RightLeg"),
+                character:FindFirstChild("LeftArm"),
+                character:FindFirstChild("RightArm"),
+                character:FindFirstChild("LeftUpperArm"),
+                character:FindFirstChild("LeftLowerArm"),
+                character:FindFirstChild("RightUpperArm"),
+                character:FindFirstChild("RightLowerArm"),
+                character:FindFirstChild("LeftUpperLeg"),
+                character:FindFirstChild("LeftLowerLeg"),
+                character:FindFirstChild("RightUpperLeg"),
+                character:FindFirstChild("RightLowerLeg"),
+                character:FindFirstChild("LeftFoot"),
+                character:FindFirstChild("RightFoot"),
+                character:FindFirstChild("LeftHand"),
+                character:FindFirstChild("RightHand")
+            }
+            
+            local partToLock = character:FindFirstChild(lockBodyPart)
+            if partToLock then
+                local partPosition, onScreen = camera:WorldToViewportPoint(partToLock.Position)
+                
+                if onScreen then
+                    local screenPosition = Vector2.new(partPosition.X, partPosition.Y)
+                    local distance = (screenPosition - screenCenter).Magnitude
+                    
+                    if distance < shortestDistance then
+                        closestPlayer = player
+                        closestPart = partToLock
+                        shortestDistance = distance
+                    end
+                end
+            end
+        end
+    end
+    
+    return closestPlayer, closestPart
+end
+
+-- Function to lock the camera to the selected body part
+local function lockCameraToPart()
+    if targetPlayer and targetPlayer.Character then
+        local bodyPart = targetPlayer.Character:FindFirstChild(lockBodyPart)
+        if bodyPart then
+            camera.CFrame = CFrame.new(camera.CFrame.Position, bodyPart.Position)
+        end
+    end
+end
+
+-- Handle mouse input to start and stop locking
+UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        isRightClickHeld = true
+        targetPlayer, _ = getClosestPlayerToCenter()
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        isRightClickHeld = false
+        targetPlayer = nil
+    end
+end)
+
+-- Handle the camera update
+RunService.RenderStepped:Connect(function()
+    if isRightClickHeld then
+        lockCameraToPart()
+    end
+end)
+
+-- Keybind to change the body part to lock onto
+local changeBodyPartKey = Enum.KeyCode.B -- You can change this to any key you prefer
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent and input.KeyCode == changeBodyPartKey then
+        local bodyParts = {"Head", "UpperTorso"}
+        local currentIndex = tableFind(bodyParts, lockBodyPart)
+        if currentIndex then
+            lockBodyPart = bodyParts[(currentIndex % #bodyParts) + 1]
+        else
+            lockBodyPart = "Head" -- Default to head if something goes wrong
+        end
+    end
+end)
