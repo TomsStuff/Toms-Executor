@@ -7,4 +7,4 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Button1 = "OK"
 })
 loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-Test'))()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-TestAimbot"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-testAimbot"))()
