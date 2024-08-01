@@ -111,7 +111,7 @@ local changeBodyPartKey = Enum.KeyCode.B -- You can change this to any key you p
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
     if not gameProcessedEvent and input.KeyCode == changeBodyPartKey then
-        local bodyParts = {"Head", "UpperTorso", "LowerTorso"}
+        local bodyParts = {"Head", "LowerTorso"}
         local currentIndex = tableFind(bodyParts, lockBodyPart)
         if currentIndex then
             lockBodyPart = bodyParts[(currentIndex % #bodyParts) + 1]
