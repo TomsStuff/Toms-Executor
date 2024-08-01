@@ -86,9 +86,17 @@ UserInputService.InputBegan:Connect(function(inputObject, gameProcessedEvent)
                 if Toggled then
                     LastPos = character.HumanoidRootPart.Position
                     character.Humanoid.PlatformStand = true
+                    -- Disable gravity
+                    character.Humanoid.UseJumpPower = false
+                    character.Humanoid.JumpPower = 0
+                    character.HumanoidRootPart.Anchored = true
                 else
                     LastPos = nil
                     character.Humanoid.PlatformStand = false
+                    -- Re-enable gravity
+                    character.Humanoid.UseJumpPower = true
+                    character.Humanoid.JumpPower = 50 -- Default jump power; adjust as needed
+                    character.HumanoidRootPart.Anchored = false
                 end
             end
         elseif inputObject.KeyCode == Settings.SprintKey then
@@ -102,7 +110,7 @@ UserInputService.InputBegan:Connect(function(inputObject, gameProcessedEvent)
 end)
 
 UserInputService.InputEnded:Connect(function(inputObject)
-    if not inputObject.UserInputType == Enum.UserInputType.Keyboard then return end
+    if inputObject.UserInputType ~= Enum.UserInputType.Keyboard then return end
     if inputObject.KeyCode == Settings.ToggleKey then
         KeyStates[Settings.ToggleKey] = false
     elseif inputObject.KeyCode == Settings.SprintKey then
@@ -118,6 +126,7 @@ end)
 RunService.RenderStepped:Connect(function()
     local character = LocalPlayer.Character
     if Toggled and character and character:FindFirstChild("HumanoidRootPart") then
+        -- Stop all movement
         for _, v in pairs(character:GetDescendants()) do
             if v:IsA("BasePart") then
                 v.Velocity = Vector3.new(0, 0, 0)
