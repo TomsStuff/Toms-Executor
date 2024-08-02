@@ -1,20 +1,28 @@
-
-
 local function applyFullbright()
-    
     local lighting = game:GetService("Lighting")
-
-  
+    
+    -- Set lighting properties
     lighting.Brightness = 2 -- Increase brightness
     lighting.ClockTime = 12 -- Set time to noon
     lighting.GlobalShadows = false -- Disable shadows
     lighting.OutdoorAmbient = Color3.new(1, 1, 1) -- Set ambient light to full white
     lighting.ColorShift_Bottom = Color3.new(1, 1, 1) -- Shift bottom color to white
     lighting.ColorShift_Top = Color3.new(1, 1, 1) -- Shift top color to white
+    
+    -- Remove fog effects
+    lighting.FogEnd = 100000 -- Set a very high fog end distance
+    lighting.FogStart = 100000 -- Set a very high fog start distance
+    lighting.FogColor = Color3.new(1, 1, 1) -- Set fog color to white (to blend with the fullbright effect)
+    
+    -- Remove other effects if any exist
+    for _, effect in pairs(lighting:GetChildren()) do
+        if effect:IsA("BlurEffect") or effect:IsA("BloomEffect") or effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") or effect:IsA("DepthOfFieldEffect") then
+            effect.Enabled = false
+        end
+    end
 end
-
 
 applyFullbright()
 
-
+-- Reapply fullbright settings if Lighting properties change
 game:GetService("Lighting").Changed:Connect(applyFullbright)
