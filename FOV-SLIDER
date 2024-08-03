@@ -1,0 +1,126 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer 
+local cam = workspace.CurrentCamera
+local distort = 1  -- Default distortion value
+local uiVisible = true  -- Track UI visibility
+
+-- Function to create UI elements
+local function createUI()
+    local coreGui = game:GetService("CoreGui")
+    
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "DistortUI"
+    screenGui.Parent = coreGui
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 300, 0, 70)
+    frame.Position = UDim2.new(0.5, -150, 0.5, -35)
+    frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    frame.Parent = screenGui
+
+    local sliderBackground = Instance.new("Frame")
+    sliderBackground.Size = UDim2.new(1, -20, 0, 10)
+    sliderBackground.Position = UDim2.new(0, 10, 0.5, -5)
+    sliderBackground.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+    sliderBackground.Parent = frame
+
+    local sliderThumb = Instance.new("TextButton")
+    sliderThumb.Size = UDim2.new(0, 20, 0, 20)
+    sliderThumb.Position = UDim2.new(0, 0, 0, -5)
+    sliderThumb.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    sliderThumb.Text = ""
+    sliderThumb.Parent = sliderBackground
+
+    local valueLabel = Instance.new("TextLabel")
+    valueLabel.Size = UDim2.new(1, -20, 0, 20)
+    valueLabel.Position = UDim2.new(0, 10, 0, 50)
+    valueLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    valueLabel.TextScaled = true
+    valueLabel.Text = string.format("FOV: %.2f", distort)
+    valueLabel.Parent = frame
+
+    -- Update the UI elements based on distortion
+    local function updateUI()
+        valueLabel.Text = string.format("FOV: %.2f", distort)
+        local percent = (1 - (distort - 0.01) / 0.99)
+        sliderThumb.Position = UDim2.new(percent, -10, 0, -5)
+    end
+
+    -- Slider functionality
+    sliderThumb.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            local function update()
+                local mouse = player:GetMouse()
+                local x = mouse.X - sliderBackground.AbsolutePosition.X
+                local percent = math.clamp(x / sliderBackground.AbsoluteSize.X, 0, 1)
+                local newDistort = 1 - (percent * 0.99)
+                distort = newDistort
+                updateUI()
+            end
+
+            update()
+            local connection
+            connection = game:GetService("RunService").RenderStepped:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    connection:Disconnect()
+                else
+                    update()
+                end
+            end)
+        end
+    end)
+
+    -- Function to toggle UI visibility
+    local function toggleUI()
+        uiVisible = not uiVisible
+        screenGui.Enabled = uiVisible
+    end
+
+    -- Toggle UI with RightShift key
+    local UserInputService = game:GetService("UserInputService")
+    UserInputService.InputBegan:Connect(function(input)
+        if input.KeyCode == Enum.KeyCode.H then
+            toggleUI()
+        end
+    end)
+
+    -- Make UI movable
+    local dragToggle = false
+    local dragStart = Vector3.new()
+    local startPos = UDim2.new()
+
+    local function updateDrag(input)
+        if dragToggle then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(updateDrag)
+
+    return frame
+end
+
+-- Create and initialize UI
+createUI()
+
+-- Apply distortion effect
+game:GetService("RunService").RenderStepped:Connect(function()
+    if distort > 0.001 then
+        cam.CoordinateFrame = cam.CoordinateFrame * CFrame.new(0, 0, 0, distort, 0, 0, 0, distort, 0, 0, 0, 1)
+    end
+end)
