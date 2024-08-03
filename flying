@@ -1,4 +1,3 @@
--- Settings configuration
 local Settings = {
     Speed = 5,
     SprintSpeed = 30,
@@ -13,14 +12,13 @@ local Settings = {
     DownKey = Enum.KeyCode.Q,
 }
 
--- Setup UI
 local Screen = Instance.new("ScreenGui", game.CoreGui)
 local Distance = Instance.new("TextLabel", Screen)
 Distance.BackgroundTransparency = 1
-Distance.Size = UDim2.new(0, 100, 0, 50)
+Distance.Size = UDim2.new(0, 10, 0, 10)
 Distance.ZIndex = 2
 Distance.Text = "0"
-Distance.TextStrokeTransparency = 0.5
+Distance.TextStrokeTransparency = .5
 Distance.TextSize = 20
 Distance.TextStrokeColor3 = Color3.fromRGB(33, 33, 33)
 Distance.Font = Enum.Font.Gotham
@@ -28,14 +26,10 @@ Distance.TextColor3 = Color3.new(1, 1, 1)
 Distance.TextXAlignment = Enum.TextXAlignment.Left
 Distance.TextYAlignment = Enum.TextYAlignment.Top
 
--- Services
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
 
--- Variables
-local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
+local Mouse = game.Players.LocalPlayer:GetMouse()
 local Direction = Vector3.new(0, 0, 0)
 local InterpolatedDir = Direction
 local Tilt = 0
@@ -44,15 +38,16 @@ local Toggled = false
 local Sprinting = false
 local CameraPos = game.Workspace.CurrentCamera.CFrame.Position
 local KeyStates = {}
-local LastPos
 
--- Linear Interpolation function
-local function Lerp(a, b, t)
+
+
+function Lerp(a, b, t)
     return a + (b - a) * t
 end
 
--- Update player movement based on key presses
-local function UpdateMovement()
+local LastPos = nil
+
+function UpdateMovement()
     local newDirection = Vector3.new(0, 0, 0)
     if KeyStates[Settings.ForwardKey] then
         newDirection = newDirection - Vector3.new(0, 0, 1)
@@ -75,29 +70,17 @@ local function UpdateMovement()
     Direction = newDirection
 end
 
--- Input handling
 UserInputService.InputBegan:Connect(function(inputObject, gameProcessedEvent)
     if not gameProcessedEvent then
         if inputObject.KeyCode == Settings.ToggleKey then
             KeyStates[Settings.ToggleKey] = true
             Toggled = not Toggled
-            local character = LocalPlayer.Character
-            if character and character:FindFirstChild("HumanoidRootPart") then
-                if Toggled then
-                    LastPos = character.HumanoidRootPart.Position
-                    character.Humanoid.PlatformStand = true
-                    -- Disable gravity
-                    character.Humanoid.UseJumpPower = false
-                    character.Humanoid.JumpPower = 0
-                    character.HumanoidRootPart.Anchored = true
-                else
-                    LastPos = nil
-                    character.Humanoid.PlatformStand = false
-                    -- Re-enable gravity
-                    character.Humanoid.UseJumpPower = true
-                    character.Humanoid.JumpPower = 50 -- Default jump power; adjust as needed
-                    character.HumanoidRootPart.Anchored = false
-                end
+            if Toggled then
+                LastPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
+                game.Players.LocalPlayer.Character.Humanoid.PlatformStand = true
+            else
+                LastPos = nil
+                game.Players.LocalPlayer.Character.Humanoid.PlatformStand = false
             end
         elseif inputObject.KeyCode == Settings.SprintKey then
             KeyStates[Settings.SprintKey] = true
@@ -110,42 +93,43 @@ UserInputService.InputBegan:Connect(function(inputObject, gameProcessedEvent)
 end)
 
 UserInputService.InputEnded:Connect(function(inputObject)
-    if inputObject.UserInputType ~= Enum.UserInputType.Keyboard then return end
-    if inputObject.KeyCode == Settings.ToggleKey then
-        KeyStates[Settings.ToggleKey] = false
-    elseif inputObject.KeyCode == Settings.SprintKey then
-        KeyStates[Settings.SprintKey] = false
-        Sprinting = false
-    else
-        KeyStates[inputObject.KeyCode] = false
+    if not gameProcessedEvent then
+        if inputObject.KeyCode == Settings.ToggleKey then
+            KeyStates[Settings.ToggleKey] = false
+        elseif inputObject.KeyCode == Settings.SprintKey then
+            KeyStates[Settings.SprintKey] = false
+            Sprinting = false
+        else
+            KeyStates[inputObject.KeyCode] = false
+        end
+        UpdateMovement()
     end
-    UpdateMovement()
 end)
 
--- Update on RenderStepped
 RunService.RenderStepped:Connect(function()
-    local character = LocalPlayer.Character
-    if Toggled and character and character:FindFirstChild("HumanoidRootPart") then
-        -- Stop all movement
-        for _, v in pairs(character:GetDescendants()) do
+    if Toggled and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
             if v:IsA("BasePart") then
                 v.Velocity = Vector3.new(0, 0, 0)
             end
         end
-        local RootPart = character.HumanoidRootPart
+        local RootPart = game.Players.LocalPlayer.Character.HumanoidRootPart
         if LastPos then
-            local distance = (LastPos - RootPart.Position).Magnitude
-            Distance.Text = math.floor(distance + 0.5)
-            Distance.TextColor3 = distance >= 350 and Color3.new(1, 0, 0) or Color3.new(1, 1, 1)
+            Distance.Text = math.floor((LastPos - RootPart.Position).Magnitude + .5)
+            if (LastPos - RootPart.Position).Magnitude >= 350 then
+                Distance.TextColor3 = Color3.new(1, 0, 0)
+            else
+                Distance.TextColor3 = Color3.new(1, 1, 1)
+            end
         else
             Distance.TextColor3 = Color3.new(1, 1, 1)
-            Distance.Text = "0"
+            Distance.Text = 0
         end
-        InterpolatedDir = InterpolatedDir:Lerp((Direction * (Sprinting and Settings.SprintSpeed or Settings.Speed)), 0.2)
-        InterpolatedTilt = Lerp(InterpolatedTilt, Tilt * (Sprinting and 2 or 1), Tilt == 0 and 0.2 or 0.1)
-        RootPart.CFrame = RootPart.CFrame:Lerp(CFrame.new(RootPart.Position, RootPart.Position + Mouse.UnitRay.Direction) * CFrame.Angles(0, math.rad(0), 0) * CFrame.new(InterpolatedDir) * CFrame.Angles(math.rad(InterpolatedTilt), 0, 0), 0.2)
+        InterpolatedDir = InterpolatedDir:Lerp((Direction * (Sprinting and Settings.SprintSpeed or Settings.Speed)), .2)
+        InterpolatedTilt = Lerp(InterpolatedTilt, Tilt * (Sprinting and 2 or 1), Tilt == 0 and .2 or .1)
+        RootPart.CFrame = RootPart.CFrame:Lerp(CFrame.new(RootPart.Position, RootPart.Position + Mouse.UnitRay.Direction) * CFrame.Angles(0, math.rad(00), 0) * CFrame.new(InterpolatedDir) * CFrame.Angles(math.rad(InterpolatedTilt), 0, 0), .2)
     else
         Distance.TextColor3 = Color3.new(1, 1, 1)
-        Distance.Text = "0"
+        Distance.Text = 0
     end
 end)
