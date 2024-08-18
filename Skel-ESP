@@ -35,6 +35,9 @@ Storage.Parent = CoreGui
 -- Timing for limbs outside the box
 local limbOutsideTime = {}
 
+-- Track players being monitored
+local monitoredPlayers = {}
+
 -- Create and return a new box drawing
 local function CreateBox()
     local box = Drawing.new("Square")
@@ -224,6 +227,7 @@ local function ClearESP(player)
         playerConnections[player]:Disconnect()
         playerConnections[player] = nil
     end
+    monitoredPlayers[player] = nil
 end
 
 -- Setup ESP components for a given character
@@ -274,19 +278,22 @@ local function HandlePlayerBoxESP(player)
     if player == LocalPlayer then
         return -- Do not apply ESP to the local player
     end
-    local character = player.Character or player.CharacterAdded:Wait()
-    SetupESP(character, player)
-    player.CharacterAdded:Connect(function()
-        wait(0.2)
-        SetupESP(player.Character, player)
-    end)
+    if not monitoredPlayers[player] then
+        local character = player.Character or player.CharacterAdded:Wait()
+        SetupESP(character, player)
+        player.CharacterAdded:Connect(function()
+            wait(0.2)
+            SetupESP(player.Character, player)
+        end)
+        monitoredPlayers[player] = true
+    end
 end
 
 -- Monitor players for ESP updates
 local function MonitorPlayers()
     while true do
         for _, player in ipairs(Players:GetPlayers()) do
-            if boxesEnabled and not boxDrawings[player] then
+            if boxesEnabled then
                 HandlePlayerBoxESP(player)
             end
         end
@@ -305,7 +312,7 @@ local function ToggleESP()
         end
 
         for _, player in ipairs(Players:GetPlayers()) do
-            if not boxDrawings[player] and boxesEnabled then
+            if not monitoredPlayers[player] and boxesEnabled then
                 HandlePlayerBoxESP(player)
             end
         end
