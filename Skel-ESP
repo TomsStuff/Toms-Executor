@@ -1,0 +1,362 @@
+-- Configuration
+local BoxColor = Color3.fromRGB(255, 255, 255)
+local BoxThickness = 2
+local BoxTransparency = 1
+local BoxHeightInStuds = 4
+local BoxWidthInStuds = 1.5
+local BoxOffsetInStuds = 0.39
+
+local HealthBarWidth = 1.5 -- Fixed width for the health bar
+local HealthBarOffset = 0.5 -- Offset of the health bar from the box
+
+local SkeletonColor = Color3.fromRGB(185, 0, 200)
+local SkeletonThickness = 1
+local SkeletonTransparency = 1
+local MaxOutOfBoundsTime = 7 -- Max time in seconds before resetting limb position
+
+-- Services
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
+
+-- Variables
+local LocalPlayer = Players.LocalPlayer
+local boxesEnabled = true
+local skeletonsEnabled = true
+local boxDrawings = {}
+local skeletonConnections = {}
+local playerConnections = {}
+local Storage = Instance.new("Folder")
+Storage.Name = "ESP_Storage"
+Storage.Parent = CoreGui
+
+-- Timing for limbs outside the box
+local limbOutsideTime = {}
+
+-- Create and return a new box drawing
+local function CreateBox()
+    local box = Drawing.new("Square")
+    box.Visible = false
+    box.Color = BoxColor
+    box.Thickness = BoxThickness
+    box.Transparency = BoxTransparency
+    box.Filled = false
+    return box
+end
+
+-- Create and return a new health bar drawing
+local function CreateHealthBar()
+    local healthBar = Drawing.new("Square")
+    healthBar.Visible = false
+    healthBar.Color = Color3.fromRGB(0, 255, 0)  -- Green color for health
+    healthBar.Thickness = 1
+    healthBar.Transparency = 0.5
+    healthBar.Filled = true
+    return healthBar
+end
+
+-- Create and return a new line drawing
+local function CreateLine()
+    local line = Drawing.new("Line")
+    line.Visible = false
+    line.Color = SkeletonColor
+    line.Thickness = SkeletonThickness
+    line.Transparency = SkeletonTransparency
+    return line
+end
+
+-- Update the position and size of the box drawing for a given character
+local function UpdateBox(box, character)
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        box.Visible = false
+        return
+    end
+
+    local rootPosition, onScreen = Camera:WorldToViewportPoint(humanoidRootPart.Position)
+    if onScreen then
+        local distance = (humanoidRootPart.Position - Camera.CFrame.Position).Magnitude
+        local height = (Camera.ViewportSize.Y / distance) * BoxHeightInStuds
+        local width = (Camera.ViewportSize.X / distance) * BoxWidthInStuds
+        local offset = (Camera.ViewportSize.Y / distance) * BoxOffsetInStuds
+
+        box.Size = Vector2.new(width, height)
+        box.Position = Vector2.new(rootPosition.X - width / 2, rootPosition.Y - height / 2 + offset)
+        box.Visible = true
+
+        -- Return box position and size for use in health bar positioning
+        return {
+            Position = box.Position,
+            Size = box.Size,
+            Rotation = 0  -- Assuming no rotation, otherwise calculate as needed
+        }
+    else
+        box.Visible = false
+    end
+end
+
+-- Update the health bar drawing for a given character
+local function UpdateHealthBar(healthBar, character, boxInfo)
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        healthBar.Visible = false
+        return
+    end
+
+    if boxInfo then
+        local healthPercentage = humanoid.Health / humanoid.MaxHealth
+
+        -- Use the same size as the box for the health bar's height
+        local barHeight = boxInfo.Size.Y * healthPercentage
+        local barWidth = boxInfo.Size.X / 14.2 -- Make the health bar narrower
+
+        -- Position the health bar to the left of the box
+        healthBar.Size = Vector2.new(barWidth, boxInfo.Size.Y)
+        healthBar.Position = Vector2.new(boxInfo.Position.X - barWidth - 2, boxInfo.Position.Y)
+        healthBar.Color = Color3.fromRGB(255 - (healthPercentage * 255), healthPercentage * 255, 0) -- Color changes with health
+        healthBar.Visible = true
+    else
+        healthBar.Visible = false
+    end
+end
+
+-- Update skeleton lines for a given character
+local function UpdateSkeleton(character, skeletonLines)
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    local parts = {
+        character:FindFirstChild("Head"),
+        character:FindFirstChild("UpperTorso"),
+        character:FindFirstChild("LowerTorso"),
+        character:FindFirstChild("LeftUpperLeg"),
+        character:FindFirstChild("LeftLowerLeg"),
+        character:FindFirstChild("LeftFoot"),
+        character:FindFirstChild("RightUpperLeg"),
+        character:FindFirstChild("RightLowerLeg"),
+        character:FindFirstChild("RightFoot"),
+        character:FindFirstChild("LeftUpperArm"),
+        character:FindFirstChild("LeftLowerArm"),
+        character:FindFirstChild("LeftHand"),
+        character:FindFirstChild("RightUpperArm"),
+        character:FindFirstChild("RightLowerArm"),
+        character:FindFirstChild("RightHand")
+    }
+
+    -- Connections for the skeleton lines
+    local connections = {
+        {parts[1], parts[2]}, -- Head to UpperTorso
+        {parts[2], parts[3]}, -- UpperTorso to LowerTorso
+        {parts[3], parts[4]}, -- LowerTorso to LeftUpperLeg
+        {parts[4], parts[5]}, -- LeftUpperLeg to LeftLowerLeg
+        {parts[5], parts[6]}, -- LeftLowerLeg to LeftFoot
+        {parts[3], parts[7]}, -- LowerTorso to RightUpperLeg
+        {parts[7], parts[8]}, -- RightUpperLeg to RightLowerLeg
+        {parts[8], parts[9]}, -- RightLowerLeg to RightFoot
+        {parts[2], parts[10]}, -- UpperTorso to LeftUpperArm
+        {parts[10], parts[11]}, -- LeftUpperArm to LeftLowerArm
+        {parts[11], parts[12]}, -- LeftLowerArm to LeftHand
+        {parts[2], parts[13]}, -- UpperTorso to RightUpperArm
+        {parts[13], parts[14]}, -- RightUpperArm to RightLowerArm
+        {parts[14], parts[15]} -- RightLowerArm to RightHand
+    }
+
+    -- Track time and reset limbs if they stay outside for too long
+    return RunService.RenderStepped:Connect(function()
+        for i, line in ipairs(skeletonLines) do
+            local startPart, endPart = unpack(connections[i])
+            if startPart and endPart then
+                local startPos, startOnScreen = Camera:WorldToViewportPoint(startPart.Position)
+                local endPos, endOnScreen = Camera:WorldToViewportPoint(endPart.Position)
+                
+                if startOnScreen and endOnScreen then
+                    -- Reset time tracking for limbs inside the box
+                    limbOutsideTime[startPart] = 0
+                    limbOutsideTime[endPart] = 0
+                    
+                    line.From = Vector2.new(startPos.X, startPos.Y)
+                    line.To = Vector2.new(endPos.X, endPos.Y)
+                    line.Visible = skeletonsEnabled
+                else
+                    -- Increment the time tracking for limbs outside the box
+                    limbOutsideTime[startPart] = (limbOutsideTime[startPart] or 0) + RunService.RenderStepped:Wait()
+                    limbOutsideTime[endPart] = (limbOutsideTime[endPart] or 0) + RunService.RenderStepped:Wait()
+
+                    if (limbOutsideTime[startPart] or 0) > MaxOutOfBoundsTime then
+                        -- Move limb back inside the box
+                        startPart.CFrame = Camera.CFrame:pointToWorldSpace(Camera.CFrame:pointToWorldSpace(startPart.Position) + Vector3.new(0, 0, 0.5))
+                        limbOutsideTime[startPart] = 0
+                    end
+
+                    if (limbOutsideTime[endPart] or 0) > MaxOutOfBoundsTime then
+                        -- Move limb back inside the box
+                        endPart.CFrame = Camera.CFrame:pointToWorldSpace(Camera.CFrame:pointToWorldSpace(endPart.Position) + Vector3.new(0, 0, 0.5))
+                        limbOutsideTime[endPart] = 0
+                    end
+
+                    line.Visible = false
+                end
+            else
+                line.Visible = false
+            end
+        end
+    end)
+end
+
+-- Clear all ESP components for a player
+local function ClearESP(player)
+    if boxDrawings[player] then
+        local data = boxDrawings[player]
+        data.Box:Destroy()
+        data.HealthBar:Destroy()
+        for _, line in pairs(data.SkeletonLines) do
+            line:Destroy()
+        end
+        boxDrawings[player] = nil
+    end
+    if skeletonConnections[player] then
+        skeletonConnections[player]:Disconnect()
+        skeletonConnections[player] = nil
+    end
+    if playerConnections[player] then
+        playerConnections[player]:Disconnect()
+        playerConnections[player] = nil
+    end
+end
+
+-- Setup ESP components for a given character
+local function SetupESP(character, player)
+    -- Clear existing ESP components if any
+    ClearESP(player)
+
+    -- Wait for 0.2 seconds before creating new ESP components
+    wait(0.2)
+
+    -- Box setup
+    local box = CreateBox()
+    local healthBar = CreateHealthBar()
+
+    local skeletonLines = {}
+    for i = 1, 14 do
+        local line = CreateLine()
+        table.insert(skeletonLines, line)
+        line.Parent = Storage
+    end
+
+    boxDrawings[player] = {
+        Box = box,
+        HealthBar = healthBar,
+        SkeletonLines = skeletonLines
+    }
+
+    -- Update connections
+    playerConnections[player] = RunService.RenderStepped:Connect(function()
+        local boxInfo = UpdateBox(box, character)
+        if boxInfo then
+            UpdateHealthBar(healthBar, character, boxInfo)
+        else
+            healthBar.Visible = false -- Hide health bar if box is not visible
+        end
+    end)
+
+    local connection = UpdateSkeleton(character, skeletonLines)
+    skeletonConnections[player] = connection
+
+    character:FindFirstChildOfClass("Humanoid").Died:Connect(function()
+        ClearESP(player)
+    end)
+end
+
+-- Handle player box ESP setup
+local function HandlePlayerBoxESP(player)
+    if player == LocalPlayer then
+        return -- Do not apply ESP to the local player
+    end
+    local character = player.Character or player.CharacterAdded:Wait()
+    SetupESP(character, player)
+    player.CharacterAdded:Connect(function()
+        wait(0.2)
+        SetupESP(player.Character, player)
+    end)
+end
+
+-- Monitor players for ESP updates
+local function MonitorPlayers()
+    while true do
+        for _, player in ipairs(Players:GetPlayers()) do
+            if boxesEnabled and not boxDrawings[player] then
+                HandlePlayerBoxESP(player)
+            end
+        end
+        wait(0.5)
+    end
+end
+
+-- Toggle the visibility of ESP components
+local function ToggleESP()
+    boxesEnabled = not boxesEnabled
+    skeletonsEnabled = not skeletonsEnabled
+
+    if boxesEnabled or skeletonsEnabled then
+        if not RunService:IsRunning() then
+            MonitorPlayers() -- Start continuous player monitoring
+        end
+
+        for _, player in ipairs(Players:GetPlayers()) do
+            if not boxDrawings[player] and boxesEnabled then
+                HandlePlayerBoxESP(player)
+            end
+        end
+    else
+        for _, data in pairs(boxDrawings) do
+            data.Box:Destroy()
+            data.HealthBar:Destroy()
+            for _, line in pairs(data.SkeletonLines) do
+                line:Destroy()
+            end
+        end
+        boxDrawings = {}
+
+        for _, connection in pairs(playerConnections) do
+            connection:Disconnect()
+        end
+        playerConnections = {}
+
+        for _, item in ipairs(Storage:GetChildren()) do
+            item:Destroy()
+        end
+
+        for _, conn in pairs(skeletonConnections) do
+            conn:Disconnect()
+        end
+        skeletonConnections = {}
+    end
+end
+
+-- Input handling to toggle ESP
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.K then
+        ToggleESP()
+    end
+end)
+
+-- Handle new players joining
+Players.PlayerAdded:Connect(function(player)
+    if boxesEnabled then
+        HandlePlayerBoxESP(player)
+    end
+end)
+
+-- Handle existing players on script run
+for _, player in ipairs(Players:GetPlayers()) do
+    if boxesEnabled then
+        HandlePlayerBoxESP(player)
+    end
+end
+
+-- Handle players leaving
+Players.PlayerRemoving:Connect(function(player)
+    ClearESP(player)
+end)
