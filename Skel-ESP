@@ -125,7 +125,6 @@ local function UpdateHealthBar(healthBar, character, boxInfo)
     end
 end
 
--- Update skeleton lines for a given character
 local function UpdateSkeleton(character, skeletonLines)
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
@@ -166,8 +165,8 @@ local function UpdateSkeleton(character, skeletonLines)
         {parts[14], parts[15]} -- RightLowerArm to RightHand
     }
 
-    -- Track time and reset limbs if they stay outside for too long
     return RunService.RenderStepped:Connect(function()
+        local allVisible = true
         for i, line in ipairs(skeletonLines) do
             local startPart, endPart = unpack(connections[i])
             if startPart and endPart then
@@ -175,40 +174,27 @@ local function UpdateSkeleton(character, skeletonLines)
                 local endPos, endOnScreen = Camera:WorldToViewportPoint(endPart.Position)
                 
                 if startOnScreen and endOnScreen then
-                    -- Reset time tracking for limbs inside the box
-                    limbOutsideTime[startPart] = 0
-                    limbOutsideTime[endPart] = 0
-                    
                     line.From = Vector2.new(startPos.X, startPos.Y)
                     line.To = Vector2.new(endPos.X, endPos.Y)
                     line.Visible = skeletonsEnabled
                 else
-                    -- Increment the time tracking for limbs outside the box
-                    limbOutsideTime[startPart] = (limbOutsideTime[startPart] or 0) + RunService.RenderStepped:Wait()
-                    limbOutsideTime[endPart] = (limbOutsideTime[endPart] or 0) + RunService.RenderStepped:Wait()
-
-                    if (limbOutsideTime[startPart] or 0) > MaxOutOfBoundsTime then
-                        -- Move limb back inside the box
-                        startPart.CFrame = Camera.CFrame:pointToWorldSpace(Camera.CFrame:pointToWorldSpace(startPart.Position) + Vector3.new(0, 0, 0.5))
-                        limbOutsideTime[startPart] = 0
-                    end
-
-                    if (limbOutsideTime[endPart] or 0) > MaxOutOfBoundsTime then
-                        -- Move limb back inside the box
-                        endPart.CFrame = Camera.CFrame:pointToWorldSpace(Camera.CFrame:pointToWorldSpace(endPart.Position) + Vector3.new(0, 0, 0.5))
-                        limbOutsideTime[endPart] = 0
-                    end
-
                     line.Visible = false
+                    allVisible = false
                 end
             else
                 line.Visible = false
+                allVisible = false
             end
+        end
+
+        -- If no lines are visible, you may want to hide or reset other related components
+        if not allVisible then
+            -- Handle cases where all skeleton lines are off-screen
         end
     end)
 end
 
--- Clear all ESP components for a player
+-- Clear ESP components for a given player
 local function ClearESP(player)
     if boxDrawings[player] then
         local data = boxDrawings[player]
@@ -273,8 +259,8 @@ local function SetupESP(character, player)
     end)
 end
 
--- Handle player box ESP setup
-local function HandlePlayerBoxESP(player)
+-- Handle player ESP setup
+local function HandlePlayerESP(player)
     if player == LocalPlayer then
         return -- Do not apply ESP to the local player
     end
@@ -289,12 +275,12 @@ local function HandlePlayerBoxESP(player)
     end
 end
 
--- Monitor players for ESP updates
-local function MonitorPlayers()
+-- Check for new players and add ESP if necessary
+local function CheckForNewPlayers()
     while true do
         for _, player in ipairs(Players:GetPlayers()) do
-            if boxesEnabled then
-                HandlePlayerBoxESP(player)
+            if boxesEnabled and not monitoredPlayers[player] then
+                HandlePlayerESP(player)
             end
         end
         wait(0.5)
@@ -308,12 +294,12 @@ local function ToggleESP()
 
     if boxesEnabled or skeletonsEnabled then
         if not RunService:IsRunning() then
-            MonitorPlayers() -- Start continuous player monitoring
+            CheckForNewPlayers() -- Start checking for new players
         end
 
         for _, player in ipairs(Players:GetPlayers()) do
             if not monitoredPlayers[player] and boxesEnabled then
-                HandlePlayerBoxESP(player)
+                HandlePlayerESP(player)
             end
         end
     else
@@ -352,15 +338,29 @@ end)
 -- Handle new players joining
 Players.PlayerAdded:Connect(function(player)
     if boxesEnabled then
-        HandlePlayerBoxESP(player)
+        HandlePlayerESP(player)
     end
 end)
 
 -- Handle existing players on script run
-for _, player in ipairs(Players:GetPlayers()) do
-    if boxesEnabled then
-        HandlePlayerBoxESP(player)
+if LocalPlayer and LocalPlayer.Character then
+    -- Player is already spawned
+    for _, player in ipairs(Players:GetPlayers()) do
+        if boxesEnabled then
+            HandlePlayerESP(player)
+        end
     end
+else
+    -- Wait for player to be fully spawned
+    Players.PlayerAdded:Connect(function(player)
+        if player == LocalPlayer and player.Character then
+            for _, player in ipairs(Players:GetPlayers()) do
+                if boxesEnabled then
+                    HandlePlayerESP(player)
+                end
+            end
+        end
+    end)
 end
 
 -- Handle players leaving
