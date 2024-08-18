@@ -70,6 +70,35 @@ local function CreateLine()
     return line
 end
 
+-- Wait for the character to fully load
+local function WaitForCharacter(character)
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    -- Wait for additional components if needed (like head, torso, limbs, etc.)
+    local requiredParts = {
+        "Head",
+        "UpperTorso",
+        "LowerTorso",
+        "LeftUpperLeg",
+        "LeftLowerLeg",
+        "LeftFoot",
+        "RightUpperLeg",
+        "RightLowerLeg",
+        "RightFoot",
+        "LeftUpperArm",
+        "LeftLowerArm",
+        "LeftHand",
+        "RightUpperArm",
+        "RightLowerArm",
+        "RightHand"
+    }
+    
+    for _, partName in ipairs(requiredParts) do
+        character:WaitForChild(partName)
+    end
+end
+
 -- Update the position and size of the box drawing for a given character
 local function UpdateBox(box, character)
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
@@ -221,8 +250,8 @@ local function SetupESP(character, player)
     -- Clear existing ESP components if any
     ClearESP(player)
 
-    -- Wait for 0.2 seconds before creating new ESP components
-    wait(0.2)
+    -- Wait for character and its components to be fully loaded
+    WaitForCharacter(character)
 
     -- Box setup
     local box = CreateBox()
@@ -268,8 +297,8 @@ local function HandlePlayerESP(player)
         local character = player.Character or player.CharacterAdded:Wait()
         SetupESP(character, player)
         player.CharacterAdded:Connect(function()
-            wait(0.2)
-            SetupESP(player.Character, player)
+            local newCharacter = player.Character or player.CharacterAdded:Wait()
+            SetupESP(newCharacter, player)
         end)
         monitoredPlayers[player] = true
     end
