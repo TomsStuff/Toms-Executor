@@ -1,0 +1,109 @@
+-- Services
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+
+-- Player and character references
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Camera reference
+local camera = Workspace.CurrentCamera
+
+-- Variables for movement
+local moveSpeed = 16 -- Speed at which the character moves
+local moveForward = false
+local walkAnimationId = "rbxassetid://180435571" -- Example animation ID, replace with your own
+local walkAnimation = Instance.new("Animation")
+walkAnimation.AnimationId = walkAnimationId
+local animTrack = humanoid:LoadAnimation(walkAnimation)
+
+-- Variables for spinbot
+local spinSpeed = 50
+local spinActive = false
+local originalAutoRotate = humanoid.AutoRotate
+local spinVelocity
+
+-- Function to print the spinning status
+local function printSpinStatus()
+    if spinActive then
+        print("HumanoidRootPart is spinning.")
+    else
+        print("HumanoidRootPart is not spinning.")
+    end
+end
+
+-- Function to apply the spin
+local function applySpin()
+    spinVelocity = Instance.new("AngularVelocity")
+    spinVelocity.Attachment0 = humanoidRootPart:WaitForChild("RootAttachment")
+    spinVelocity.MaxTorque = math.huge
+    spinVelocity.AngularVelocity = Vector3.new(0, spinSpeed, 0)
+    spinVelocity.Parent = humanoidRootPart
+    spinVelocity.Name = "speen"
+end
+
+-- Function to handle input started
+local function onInputBegan(input, gameProcessedEvent)
+    if not gameProcessedEvent then
+        if input.KeyCode == Enum.KeyCode.F then
+            moveForward = true
+            if not animTrack.IsPlaying then
+                animTrack:Play()
+            end
+        elseif input.KeyCode == Enum.KeyCode.U then
+            -- Toggle spinbot
+            if spinActive then
+                -- Deactivate spinbot
+                if spinVelocity then
+                    spinVelocity:Destroy()
+                end
+                humanoid.AutoRotate = originalAutoRotate
+            else
+                -- Activate spinbot
+                humanoid.AutoRotate = false
+                applySpin()
+            end
+            spinActive = not spinActive
+            printSpinStatus() -- Print the spinning status when toggling
+        end
+    end
+end
+
+-- Function to handle input ended
+local function onInputEnded(input, gameProcessedEvent)
+    if not gameProcessedEvent and input.KeyCode == Enum.KeyCode.F then
+        moveForward = false
+        animTrack:Stop()
+    end
+end
+
+-- Connect input events
+UserInputService.InputBegan:Connect(onInputBegan)
+UserInputService.InputEnded:Connect(onInputEnded)
+
+-- Main loop for smooth movement
+local function moveCharacter()
+    while true do
+        wait(0.001) -- Adjust the wait time for smoothness
+        if moveForward then
+            -- Get the direction the camera is facing on the X-Z plane
+            local cameraDirection = camera.CFrame.LookVector
+            local moveDirection = Vector3.new(cameraDirection.X, 0, cameraDirection.Z).unit
+            -- Compute new position
+            local newPosition = humanoidRootPart.Position + moveDirection * moveSpeed * 0.1
+            -- Update HumanoidRootPart's position without changing rotation
+            humanoidRootPart.CFrame = CFrame.new(newPosition, newPosition + humanoidRootPart.CFrame.LookVector)
+        end
+
+        -- Ensure the spin is always applied if active
+        if spinActive and not spinVelocity then
+            applySpin()
+        end
+    end
+end
+
+-- Run the movement function in a coroutine to keep it smooth
+coroutine.wrap(moveCharacter)()
