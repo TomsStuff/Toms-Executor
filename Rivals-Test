@@ -1,3 +1,6 @@
+local coregui = Game:GetService("CoreGui")
+script.Parent = coregui
+
 local FillColor = Color3.fromRGB(238, 75, 43)
 local DepthMode = "AlwaysOnTop"
 local FillTransparency = 0.5
