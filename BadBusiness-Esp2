@@ -1,0 +1,92 @@
+local playersFolder = game:GetService("Workspace").Characters
+local checkedParts = {}
+
+-- Function to convert a part's size (Vector3) to UDim2 for the billboard size
+local function getBillboardSize(partSize)
+    -- Scale the billboard size to match the part's dimensions, adjusting for visibility
+    return UDim2.new(partSize.X * 0.7, 0, partSize.Y * 0.7, 0)
+end
+
+-- Function to create a BillboardGui for a given part
+local function createBillboard(part)
+    if not part:FindFirstChild("ESPBillboard") then
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "ESPBillboard"
+        billboard.Adornee = part
+        billboard.Size = getBillboardSize(part.Size) -- Dynamically set size based on the part's size
+        billboard.AlwaysOnTop = true
+        billboard.Parent = part
+
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(1, 0, 1, 0)
+        frame.BackgroundTransparency = 0.5
+        frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        frame.BorderSizePixel = 0
+        frame.Parent = billboard
+    end
+end
+
+-- Function to create a white outline (Highlight) around a player model
+local function createOutline(playerModel)
+    if not playerModel:FindFirstChild("ESPHighlight") then
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "ESPHighlight"
+        highlight.Adornee = playerModel
+        highlight.FillTransparency = 0 -- Makes sure there's no fill, just the outline
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- Set to white
+        highlight.OutlineTransparency = 0 -- Fully visible outline
+        highlight.Parent = playerModel
+    end
+end
+
+-- Function to apply ESP to a player's character
+local function applyESPToPlayer(player)
+    local hasBasePart = false
+    for _, child in ipairs(player:GetChildren()) do
+        for _, grandChild in ipairs(child:GetChildren()) do
+            if grandChild:IsA("BasePart") then
+                hasBasePart = true
+                if not checkedParts[grandChild] then
+                    createBillboard(grandChild)
+                    checkedParts[grandChild] = true
+                end
+            end
+        end
+    end
+
+    -- If the player has no BasePart, exit early
+    if not hasBasePart then
+        return
+    end
+
+    -- Create an outline for the whole player model
+    createOutline(player)
+
+    -- Set up connections to handle newly added parts
+    player.ChildAdded:Connect(function(child)
+        child.DescendantAdded:Connect(function(descendant)
+            if descendant:IsA("BasePart") and not checkedParts[descendant] then
+                createBillboard(descendant)
+                checkedParts[descendant] = true
+            end
+        end)
+
+        if child:IsA("BasePart") and not checkedParts[child] then
+            createBillboard(child)
+            checkedParts[child] = true
+        end
+    end)
+end
+
+-- Initial loop to apply ESP to all existing players
+for _, player in ipairs(playersFolder:GetChildren()) do
+    applyESPToPlayer(player)
+end
+
+-- Continuous loop to apply ESP to any new players
+while true do
+    for _, player in ipairs(playersFolder:GetChildren()) do
+        applyESPToPlayer(player)
+    end
+    wait(1)
+end
