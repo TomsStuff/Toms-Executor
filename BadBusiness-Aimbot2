@@ -1,0 +1,65 @@
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local camera = workspace.CurrentCamera
+
+local isRightClickHeld = false
+local targetHead = nil
+
+-- Define a minimum distance to prevent locking onto a head too close to the camera
+local MIN_DISTANCE = 0.5 -- minimum distance in studs
+
+local function getClosestHeadToCenter()
+    local closestHead = nil
+    local shortestDistance = math.huge
+    local screenCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    
+    for _, object in ipairs(workspace:GetDescendants()) do
+        if object.Name == "Head" and object:IsA("BasePart") then
+            local headPosition, onScreen = camera:WorldToViewportPoint(object.Position)
+            
+            if onScreen then
+                -- Check the distance between the camera and the head
+                local cameraToHeadDistance = (camera.CFrame.Position - object.Position).Magnitude
+                
+                -- If the head is farther than the minimum distance, consider it
+                if cameraToHeadDistance > MIN_DISTANCE then
+                    local screenPosition = Vector2.new(headPosition.X, headPosition.Y)
+                    local distance = (screenPosition - screenCenter).Magnitude
+                    
+                    if distance < shortestDistance then
+                        closestHead = object
+                        shortestDistance = distance
+                    end
+                end
+            end
+        end
+    end
+    
+    return closestHead
+end
+
+local function lockCameraToHead()
+    if targetHead then
+        camera.CFrame = CFrame.new(camera.CFrame.Position, targetHead.Position)
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        isRightClickHeld = true
+        targetHead = getClosestHeadToCenter()
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        isRightClickHeld = false
+        targetHead = nil
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if isRightClickHeld then
+        lockCameraToHead()
+    end
+end)
