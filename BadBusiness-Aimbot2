@@ -1,7 +1,8 @@
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local camera = workspace.CurrentCamera
-
+local coregui = game:GetService("CoreGui")
+script.Parent = coregui
 local isRightClickHeld = false
 local targetHead = nil
 
