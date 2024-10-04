@@ -1,3 +1,5 @@
+local coregui = game:GetService("CoreGui")
+script.Parent = coregui
 local Config = {
     Box                      = true,
     BoxOutline               = true,
