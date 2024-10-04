@@ -8,4 +8,4 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Button1 = "OK"
 })
 loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-Aimbot-V3'))()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/NiggEsp"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-BetterEsp"))()
