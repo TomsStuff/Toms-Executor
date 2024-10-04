@@ -1,0 +1,95 @@
+local CoreGui = game:GetService("CoreGui")
+script.Parent = CoreGui
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local localPlayer = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+local isRightClickHeld = false
+local targetPlayer = nil
+local maxDistance = 200 -- Maximum distance in studs
+
+-- Function to aim at the target player's head
+local function aimAtTarget()
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") then
+        local head = targetPlayer.Character.Head
+        
+        -- Calculate the distance from the local player to the target player
+        local distance = (localPlayer.Character.HumanoidRootPart.Position - head.Position).Magnitude
+        
+        -- Check if the target is within the maximum distance
+        if distance <= maxDistance then
+            -- Get the viewport position of the target player's head
+            local headPosition, onScreen = camera:WorldToViewportPoint(head.Position)
+            
+            if onScreen then
+                -- Get current mouse position
+                local mouseLocation = UserInputService:GetMouseLocation()
+
+                -- Calculate the difference between the head position and mouse position
+                local deltaX = headPosition.X - mouseLocation.X
+                local deltaY = headPosition.Y - mouseLocation.Y
+                
+                -- Directly move the mouse to the target's head position
+                -- Set sensitivity to a minimum for more accuracy
+                local sensitivity = 1 -- Low sensitivity for more accuracy
+                getfenv().mousemoverel(deltaX * sensitivity, deltaY * sensitivity)
+            end
+        else
+            -- If the target is too far away, stop aiming at them
+            targetPlayer = nil
+        end
+    end
+end
+
+-- Function to find the closest player to the screen center
+local function getClosestPlayerToCenter()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+    local screenCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Head") then
+            local head = player.Character.Head
+            local headPosition, onScreen = camera:WorldToViewportPoint(head.Position)
+            
+            if onScreen then
+                local screenPosition = Vector2.new(headPosition.X, headPosition.Y)
+                local distance = (screenPosition - screenCenter).Magnitude
+                
+                if distance < shortestDistance then
+                    closestPlayer = player
+                    shortestDistance = distance
+                end
+            end
+        end
+    end
+    
+    return closestPlayer
+end
+
+-- Event to start aiming when right mouse button is pressed
+UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        isRightClickHeld = true
+        targetPlayer = getClosestPlayerToCenter()
+    end
+end)
+
+-- Event to stop aiming when right mouse button is released
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        isRightClickHeld = false
+        targetPlayer = nil
+    end
+end)
+
+-- Main loop to continuously aim at the target while the right mouse button is held down
+RunService.RenderStepped:Connect(function()
+    if isRightClickHeld and targetPlayer then
+        aimAtTarget() -- Call the aim function
+    end
+end)
