@@ -1,0 +1,109 @@
+--// vars
+local players = workspace.Players
+
+--// services
+local run_service = game:GetService("RunService")
+local teams = game:GetService("Teams")
+local plr_service = game:GetService("Players")
+local core_gui = game:GetService("CoreGui") -- CoreGui to move the highlight
+
+--// tables
+local features = {
+    chams = {
+        teamcheck = true,
+        color = {
+            fill = Color3.fromRGB(255, 0, 0),
+            outline = Color3.fromRGB(255, 255, 255)
+        },
+        transparency = {
+            fill = 0,
+            outline = 0
+        }
+    }
+}
+
+--// functions
+function get_players()
+    local entity_list = {}
+    for _, team in players:GetChildren() do
+        for _, player in team:GetChildren() do
+            if player:IsA("Model") then
+                entity_list[#entity_list + 1] = player
+            end
+        end
+    end
+    return entity_list
+end
+
+function is_ally(player)
+    if not player then
+        return false, nil
+    end
+
+    local helmet = player:FindFirstChildWhichIsA("Folder"):FindFirstChildOfClass("MeshPart")
+
+    if not helmet then
+        return false, nil
+    end
+
+    if helmet.BrickColor == BrickColor.new("Black") then
+        return teams.Phantoms == plr_service.LocalPlayer.Team, teams.Phantoms
+    end
+
+    return teams.Ghosts == plr_service.LocalPlayer.Team, teams.Ghosts
+end
+
+--// create drawing objects
+local tracerLine = Drawing.new("Line")
+tracerLine.Visible = false
+tracerLine.Color = Color3.fromRGB(255, 0, 0) -- Line color
+tracerLine.Thickness = 2 -- Line thickness
+
+--// logic
+run_service.RenderStepped:Connect(function(delta)
+    tracerLine.Visible = false -- Hide the line by default each frame
+
+    for _, player in get_players() do
+        -- Check if the player doesn't already have a highlight in CoreGui
+        if not core_gui:FindFirstChild(player.Name .. "_Highlight") then
+            local is_ally, team = is_ally(player)
+
+            -- Double-checking if the player is valid and whether they are on the correct team
+            if (features.chams.teamcheck and not is_ally) or not features.chams.teamcheck then
+                -- Create highlight if it doesn't exist
+                local highlight = Instance.new("Highlight")
+                highlight.Name = player.Name .. "_Highlight"
+                highlight.FillColor = features.chams.color.fill
+                highlight.OutlineColor = features.chams.color.outline
+                highlight.FillTransparency = features.chams.transparency.fill
+                highlight.OutlineTransparency = features.chams.transparency.outline
+
+                -- Set the Adornee to the player's model (so the Highlight targets it)
+                highlight.Adornee = player
+                highlight.Parent = core_gui -- Move the highlight to CoreGui
+
+                -- Draw tracer line
+                local humanoidRootPart = player:FindFirstChild("HumanoidRootPart")
+                if humanoidRootPart then
+                    local screenPosition, onScreen = workspace.CurrentCamera:WorldToScreenPoint(humanoidRootPart.Position)
+
+                    if onScreen then
+                        tracerLine.Visible = true
+                        tracerLine.From = Vector2.new(screenPosition.X, workspace.CurrentCamera.ViewportSize.Y) -- Bottom of the screen
+                        tracerLine.To = Vector2.new(screenPosition.X, screenPosition.Y) -- Player position on screen
+                    end
+                end
+            end
+        else
+            -- Optional: Update the highlight if it exists (if necessary)
+            local existingHighlight = core_gui:FindFirstChild(player.Name .. "_Highlight")
+            if existingHighlight then
+                existingHighlight.FillColor = features.chams.color.fill
+                existingHighlight.OutlineColor = features.chams.color.outline
+                existingHighlight.FillTransparency = features.chams.transparency.fill
+                existingHighlight.OutlineTransparency = features.chams.transparency.outline
+            end
+        end
+    end
+end)
+ 
