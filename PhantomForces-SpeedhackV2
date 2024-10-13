@@ -1,0 +1,341 @@
+-- Variables
+getgenv().WalkSpeedValue = 100 -- Default walk speed value
+getgenv().JumpHeightValue = 50 -- Default jump height value
+getgenv().WalkSpeedEnabled = false -- Default toggle state
+getgenv().JumpHeightEnabled = false -- Jump toggle state
+local uiVisible = true -- Track UI visibility state
+
+-- Instances from RoadToGlory's Converter:
+local Converted = {
+    ["_ScreenGui"] = Instance.new("ScreenGui");
+    ["_Frame"] = Instance.new("Frame");
+    ["_UICorner"] = Instance.new("UICorner");
+    ["_CurrentValue"] = Instance.new("TextLabel");
+    ["_JumpHeightValue"] = Instance.new("TextLabel");
+    ["_Toggle"] = Instance.new("TextButton");
+    ["_UICorner1"] = Instance.new("UICorner");
+    ["_Close"] = Instance.new("TextButton");
+}
+
+-- Properties for the new UI:
+Converted["_ScreenGui"].ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Converted["_ScreenGui"].Parent = game:GetService("CoreGui")
+
+Converted["_Frame"].BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Converted["_Frame"].BorderColor3 = Color3.fromRGB(0, 0, 0)
+Converted["_Frame"].BorderSizePixel = 0
+Converted["_Frame"].Position = UDim2.new(0.297, 0, 0.397, 0)
+Converted["_Frame"].Size = UDim2.new(0, 316, 0, 260) -- Adjusted height to fit the second slider
+Converted["_Frame"].Parent = Converted["_ScreenGui"]
+Converted["_Frame"].Active = true
+Converted["_Frame"].Draggable = true -- Makes the background draggable
+
+Converted["_UICorner"].CornerRadius = UDim.new(0, 10)
+Converted["_UICorner"].Parent = Converted["_Frame"]
+
+Converted["_CurrentValue"].Font = Enum.Font.SourceSans
+Converted["_CurrentValue"].TextColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_CurrentValue"].TextSize = 27
+Converted["_CurrentValue"].BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_CurrentValue"].BackgroundTransparency = 1
+Converted["_CurrentValue"].Position = UDim2.new(0, 0, 0.151, 0)
+Converted["_CurrentValue"].Size = UDim2.new(0, 316, 0, 50)
+Converted["_CurrentValue"].Text = "Speed: " .. getgenv().WalkSpeedValue -- Dynamic value display
+Converted["_CurrentValue"].Parent = Converted["_Frame"]
+
+-- Display the Jump Height value
+Converted["_JumpHeightValue"].Font = Enum.Font.SourceSans
+Converted["_JumpHeightValue"].TextColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_JumpHeightValue"].TextSize = 27
+Converted["_JumpHeightValue"].BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_JumpHeightValue"].BackgroundTransparency = 1
+Converted["_JumpHeightValue"].Position = UDim2.new(0, 0, 0.40, 0)
+Converted["_JumpHeightValue"].Size = UDim2.new(0, 316, 0, 50)
+Converted["_JumpHeightValue"].Text = "Jump Height: " .. getgenv().JumpHeightValue
+Converted["_JumpHeightValue"].Parent = Converted["_Frame"]
+
+Converted["_Toggle"].Font = Enum.Font.SourceSans
+Converted["_Toggle"].Text = "Off"
+Converted["_Toggle"].TextColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_Toggle"].TextSize = 20
+Converted["_Toggle"].BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Converted["_Toggle"].Position = UDim2.new(0, 0, 0.807, 0)
+Converted["_Toggle"].Size = UDim2.new(0, 316, 0, 50)
+Converted["_Toggle"].Name = "Toggle"
+Converted["_Toggle"].Parent = Converted["_Frame"]
+
+Converted["_UICorner1"].CornerRadius = UDim.new(0, 10)
+Converted["_UICorner1"].Parent = Converted["_Toggle"]
+
+Converted["_Close"].Font = Enum.Font.SourceSans
+Converted["_Close"].Text = "X"
+Converted["_Close"].TextColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_Close"].TextSize = 16
+Converted["_Close"].BackgroundTransparency = 1
+Converted["_Close"].Position = UDim2.new(0.902, 0, 0, 0)
+Converted["_Close"].Size = UDim2.new(0, 31, 0, 30)
+Converted["_Close"].Parent = Converted["_Frame"]
+
+-- Close button functionality
+Converted["_Close"].MouseButton1Click:Connect(function()
+    Converted["_ScreenGui"]:Destroy()
+end)
+
+-- First Slider elements (Speed):
+local SliderBackground = Instance.new("Frame")
+local SliderKnob = Instance.new("TextButton")
+
+SliderBackground.Size = UDim2.new(0, 200, 0, 20)
+SliderBackground.Position = UDim2.new(0.5, -100, 0.35, -10)
+SliderBackground.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+SliderBackground.BorderSizePixel = 0
+SliderBackground.Parent = Converted["_Frame"]
+
+SliderKnob.Size = UDim2.new(0, 20, 0, 20)
+SliderKnob.Position = UDim2.new(0, 0, 0, 0)
+SliderKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+SliderKnob.BorderSizePixel = 0
+SliderKnob.Text = ""
+SliderKnob.Parent = SliderBackground
+
+-- Second Slider elements (Jump Height):
+local JumpSliderBackground = Instance.new("Frame")
+local JumpSliderKnob = Instance.new("TextButton")
+
+JumpSliderBackground.Size = UDim2.new(0, 200, 0, 20)
+JumpSliderBackground.Position = UDim2.new(0.5, -100, 0.60, -10)
+JumpSliderBackground.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+JumpSliderBackground.BorderSizePixel = 0
+JumpSliderBackground.Parent = Converted["_Frame"]
+
+JumpSliderKnob.Size = UDim2.new(0, 20, 0, 20)
+JumpSliderKnob.Position = UDim2.new(0, 0, 0, 0)
+JumpSliderKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+JumpSliderKnob.BorderSizePixel = 0
+JumpSliderKnob.Text = ""
+JumpSliderKnob.Parent = JumpSliderBackground
+
+-- Function to update WalkSpeed
+local function updateWalkSpeed(newSpeed)
+    getgenv().WalkSpeedValue = newSpeed
+    Converted["_CurrentValue"].Text = "Speed: " .. tostring(newSpeed)
+
+    -- Get the target humanoid inside the model under Workspace.Ignore
+    local targetModel = game:GetService("Workspace").Ignore:FindFirstChildOfClass("Model")
+    local targetHumanoid = targetModel and targetModel:FindFirstChildOfClass("Humanoid")
+
+    -- Ensure the target humanoid exists
+    if targetHumanoid then
+        -- Set the WalkSpeed when enabled
+        targetHumanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+            if getgenv().WalkSpeedEnabled then
+                targetHumanoid.WalkSpeed = getgenv().WalkSpeedValue
+            end
+        end)
+
+        if getgenv().WalkSpeedEnabled then
+            targetHumanoid.WalkSpeed = getgenv().WalkSpeedValue
+        end
+    else
+        warn("No humanoid found in the target model")
+    end
+end
+
+-- Function to update Jump Height
+local function updateJumpHeight(newJumpHeight)
+    getgenv().JumpHeightValue = newJumpHeight
+    Converted["_JumpHeightValue"].Text = "Jump Height: " .. tostring(newJumpHeight)
+
+    -- Get the target humanoid inside the model under Workspace.Ignore
+    local targetModel = game:GetService("Workspace").Ignore:FindFirstChildOfClass("Model")
+    local targetHumanoid = targetModel and targetModel:FindFirstChildOfClass("Humanoid")
+
+    -- Ensure the target humanoid exists
+    if targetHumanoid then
+        -- Set the JumpHeight when enabled
+        targetHumanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()
+            if getgenv().JumpHeightEnabled then
+                targetHumanoid.JumpPower = getgenv().JumpHeightValue
+            end
+        end)
+
+        if getgenv().JumpHeightEnabled then
+            targetHumanoid.JumpPower = getgenv().JumpHeightValue
+        end
+    else
+        warn("No humanoid found in the target model")
+    end
+end
+
+-- Function to handle humanoid death and look for a different model
+local function handleHumanoidDeath(humanoid)
+    humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+        if humanoid.Health <= 0 then
+            -- Look for a model with a different name in the same directory
+            local currentModel = humanoid.Parent
+            for _, model in pairs(game:GetService("Workspace").Ignore:GetChildren()) do
+                if model:IsA("Model") and model ~= currentModel then
+                    local newHumanoid = model:FindFirstChildOfClass("Humanoid")
+                    if newHumanoid then
+                        -- Apply modifications to the new humanoid
+                        updateWalkSpeed(getgenv().WalkSpeedValue)
+                        updateJumpHeight(getgenv().JumpHeightValue)
+                        break
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- Function to convert knob position to speed value
+local function knobToSpeed()
+    local relativePosition = SliderKnob.Position.X.Scale
+    local newSpeed = math.floor(relativePosition * 200) -- Map knob position to speed (0-200)
+    updateWalkSpeed(newSpeed)
+end
+
+-- Function to convert knob position to jump height value
+local function knobToJumpHeight()
+    local relativePosition = JumpSliderKnob.Position.X.Scale
+    local newJumpHeight = math.floor(relativePosition * 200) -- Map knob position to jump height (0-200)
+    updateJumpHeight(newJumpHeight)
+end
+
+-- Dragging functionality for the speed slider knob
+local draggingSpeed = false
+
+SliderKnob.MouseButton1Down:Connect(function()
+    draggingSpeed = true
+end)
+
+game:GetService("UserInputService").InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingSpeed = false
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if draggingSpeed and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local mousePos = input.Position.X
+        local sliderPos = SliderBackground.AbsolutePosition.X
+        local sliderSize = SliderBackground.AbsoluteSize.X
+        local knobPos = math.clamp(mousePos - sliderPos, 0, sliderSize)
+
+        SliderKnob.Position = UDim2.new(knobPos / sliderSize, 0, 0, 0)
+        knobToSpeed() -- Update the speed as the knob is dragged
+    end
+end)
+
+-- Dragging functionality for the jump height slider knob
+local draggingJump = false
+
+JumpSliderKnob.MouseButton1Down:Connect(function()
+    draggingJump = true
+end)
+
+game:GetService("UserInputService").InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingJump = false
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if draggingJump and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local mousePos = input.Position.X
+        local sliderPos = JumpSliderBackground.AbsolutePosition.X
+        local sliderSize = JumpSliderBackground.AbsoluteSize.X
+        local knobPos = math.clamp(mousePos - sliderPos, 0, sliderSize)
+
+        JumpSliderKnob.Position = UDim2.new(knobPos / sliderSize, 0, 0, 0)
+        knobToJumpHeight() -- Update the jump height as the knob is dragged
+    end
+end)
+
+-- Toggle button functionality
+Converted["_Toggle"].MouseButton1Click:Connect(function()
+    getgenv().WalkSpeedEnabled = not getgenv().WalkSpeedEnabled
+    getgenv().JumpHeightEnabled = not getgenv().JumpHeightEnabled
+    Converted["_Toggle"].Text = getgenv().WalkSpeedEnabled and "On" or "Off"
+end)
+
+-- Hide and show UI on "Delete" key press
+game:GetService("UserInputService").InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.Delete then
+        uiVisible = not uiVisible
+        Converted["_Frame"].Visible = uiVisible
+    end
+end)
+
+-- Initial setup for WalkSpeed and JumpHeight
+updateWalkSpeed(getgenv().WalkSpeedValue)
+updateJumpHeight(getgenv().JumpHeightValue)
+local function applySettingsToHumanoid(humanoid)
+    -- Ensure humanoid exists before applying
+    if humanoid then
+        -- Reapply WalkSpeed and JumpPower based on enabled states
+        humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+            if getgenv().WalkSpeedEnabled then
+                humanoid.WalkSpeed = getgenv().WalkSpeedValue
+            end
+        end)
+        humanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()
+            if getgenv().JumpHeightEnabled then
+                humanoid.JumpPower = getgenv().JumpHeightValue
+            end
+        end)
+
+        -- Set initial values
+        if getgenv().WalkSpeedEnabled then
+            humanoid.WalkSpeed = getgenv().WalkSpeedValue
+        end
+        if getgenv().JumpHeightEnabled then
+            humanoid.JumpPower = getgenv().JumpHeightValue
+        end
+
+        -- Handle humanoid death and respawn
+        handleHumanoidDeath(humanoid)
+    else
+        warn("No humanoid found in the target model")
+    end
+end
+
+-- Function to watch for new models being added to Workspace.Ignore
+local function monitorNewModels()
+    game:GetService("Workspace").Ignore.ChildAdded:Connect(function(child)
+        if child:IsA("Model") then
+            local humanoid = child:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                applySettingsToHumanoid(humanoid)
+            end
+        end
+    end)
+end
+
+-- Function to reapply settings to existing models when script runs
+local function reapplySettingsToExistingModels()
+    for _, model in pairs(game:GetService("Workspace").Ignore:GetChildren()) do
+        if model:IsA("Model") then
+            local humanoid = model:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                applySettingsToHumanoid(humanoid)
+            end
+        end
+    end
+end
+
+-- Monitor new models being added and apply settings
+monitorNewModels()
+
+-- Apply settings to already existing models when the script is first run
+reapplySettingsToExistingModels()
+
+-- Setup to track humanoids in the Ignore model
+for _, model in pairs(game:GetService("Workspace").Ignore:GetChildren()) do
+    if model:IsA("Model") then
+        local humanoid = model:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            handleHumanoidDeath(humanoid)
+        end
+    end
+end
