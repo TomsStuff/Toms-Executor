@@ -1,0 +1,142 @@
+-- Path to the folder containing the weapon drops and interactables
+local weaponDropsFolder = game.Workspace:WaitForChild("WeaponDrops")
+local interactablesFolder = game.Workspace:WaitForChild("Interactables")
+
+-- Get the player and their character's HumanoidRootPart
+local player = game.Players.LocalPlayer -- Make sure this is a LocalScript
+local character = player.Character or player.CharacterAdded:Wait() -- Wait for the character to load if needed
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Function to create the Safe Zone if it doesn't exist
+local function ensureSafeZoneExists()
+    local safeZone = game.Workspace:FindFirstChild("SafeZone")
+    if not safeZone then
+        -- Create the Safe Zone part
+        safeZone = Instance.new("Part")
+        safeZone.Name = "SafeZone"
+        safeZone.Size = Vector3.new(245, 90, 2048)
+        safeZone.Position = Vector3.new(375, -2.5432708263397217, -127.85264587402344)
+        safeZone.Anchored = true
+        safeZone.CanCollide = false
+        safeZone.Transparency = 0.8
+        safeZone.Parent = game.Workspace
+        print("SafeZone created.")
+    else
+        print("SafeZone already exists.")
+    end
+    return safeZone
+end
+
+-- Create or get the Safe Zone
+local safeZone = ensureSafeZoneExists()
+
+-- Function to check if the player is in the safe zone
+local function isPlayerInSafeZone()
+    local safeZoneSize = safeZone.Size / 2 -- Get half the size for boundaries
+    local safeZonePos = safeZone.Position
+    
+    local playerPos = humanoidRootPart.Position
+    
+    return (playerPos.X >= safeZonePos.X - safeZoneSize.X and playerPos.X <= safeZonePos.X + safeZoneSize.X) and
+           (playerPos.Y >= safeZonePos.Y - safeZoneSize.Y and playerPos.Y <= safeZonePos.Y + safeZoneSize.Y) and
+           (playerPos.Z >= safeZonePos.Z - safeZoneSize.Z and playerPos.Z <= safeZonePos.Z + safeZoneSize.Z)
+end
+
+-- Function to check if a position is within the safe zone
+local function isInSafeZone(position)
+    local safeZoneSize = safeZone.Size / 2 -- Get half the size for boundaries
+    local safeZonePos = safeZone.Position
+
+    return (position.X >= safeZonePos.X - safeZoneSize.X and position.X <= safeZonePos.X + safeZoneSize.X) and
+           (position.Y >= safeZonePos.Y - safeZoneSize.Y and position.Y <= safeZonePos.Y + safeZoneSize.Y) and
+           (position.Z >= safeZonePos.Z - safeZoneSize.Z and position.Z <= safeZonePos.Z + safeZoneSize.Z)
+end
+
+-- Function to get a random position within a 15-stud radius that is outside the safe zone
+local function getRandomPositionOutsideSafeZone(center, radius)
+    local randomPosition
+    local attempts = 0
+    local maxAttempts = 100 -- Prevent infinite loops
+
+    repeat
+        -- Generate a random angle and distance
+        local angle = math.rad(math.random(0, 360)) -- Random angle in radians
+        local distance = math.random() * radius -- Random distance within the radius
+        
+        -- Calculate the new X and Z offsets
+        local offsetX = math.cos(angle) * distance
+        local offsetZ = math.sin(angle) * distance
+        
+        -- Return the new position with the same Y level as the player
+        randomPosition = Vector3.new(center.X + offsetX, center.Y, center.Z + offsetZ)
+
+        -- Increment the attempts counter
+        attempts = attempts + 1
+    until not isInSafeZone(randomPosition) or attempts >= maxAttempts
+
+    -- If max attempts are reached, just return the last generated position (may still be in safe zone)
+    return randomPosition
+end
+
+-- Check if HumanoidRootPart exists
+if humanoidRootPart then
+    -- Get the position of the HumanoidRootPart
+    local rootPosition = humanoidRootPart.Position
+
+    -- Function to teleport models
+    local function teleportModels(modelsFolder, filterByName)
+        -- Loop through all objects inside the folder
+        for _, model in pairs(modelsFolder:GetChildren()) do
+            -- Check if the object is a Model and matches the filter criteria (Ammo, MRE, or Soda)
+            if model:IsA("Model") and (not filterByName or string.find(model.Name, filterByName)) then
+                -- If the model has no PrimaryPart, we set one (assuming it has parts)
+                if not model.PrimaryPart then
+                    -- Try setting any part inside the model as the PrimaryPart (optional, but recommended)
+                    local firstPart = model:FindFirstChildWhichIsA("BasePart")
+                    if firstPart then
+                        model.PrimaryPart = firstPart
+                    else
+                        print("No parts found in model:", model.Name)
+                        continue -- Skip this model if no parts exist
+                    end
+                end
+
+                -- Check if the player is in the safe zone
+                if not isPlayerInSafeZone() then
+                    -- Check if the model's position is in the safe zone
+                    if not isInSafeZone(model.PrimaryPart.Position) then
+                        -- Generate a random position outside the safe zone
+                        local randomPosition = getRandomPositionOutsideSafeZone(rootPosition, 15)
+                        
+                        -- Teleport the model to the random position
+                        model:SetPrimaryPartCFrame(CFrame.new(randomPosition))
+                        print("Model teleported to random position:", model.Name)
+
+                        -- Check for IntValue named "Value" and set it to 1400 if it exists
+                        local valueInt = model:FindFirstChild("Value")
+                        if valueInt and valueInt:IsA("IntValue") then
+                            valueInt.Value = 1400
+                            print("Set Value to 1400 for model:", model.Name)
+                        end
+                    else
+                        print("Model is in SafeZone, skipping teleportation for:", model.Name)
+                    end
+                else
+                    print("Player is in SafeZone, skipping teleportation for:", model.Name)
+                end
+            else
+                print(model.Name, "does not match criteria, skipping.")
+            end
+        end
+    end
+
+    -- Teleport models from WeaponDrops
+    teleportModels(weaponDropsFolder, nil) -- No filter, teleport all models in WeaponDrops
+    
+    -- Teleport models from Interactables that contain "Ammo", "MRE", or "Soda" in their name
+    teleportModels(interactablesFolder, "Ammo") -- Teleport models with "Ammo" in the name
+    teleportModels(interactablesFolder, "MRE")  -- Teleport models with "MRE" in the name
+    teleportModels(interactablesFolder, "Soda") -- Teleport models with "Soda" in the name
+else
+    print("HumanoidRootPart not found!")
+end
