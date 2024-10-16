@@ -1,0 +1,56 @@
+-- Path to the folder containing the weapon drops
+local weaponDropsFolder = game.Workspace:WaitForChild("WeaponDrops")
+
+-- Get the player and their character's HumanoidRootPart
+local player = game.Players.LocalPlayer -- Make sure this is a LocalScript
+local character = player.Character or player.CharacterAdded:Wait() -- Wait for the character to load if needed
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Check if HumanoidRootPart exists
+if humanoidRootPart then
+    -- Get the position of the HumanoidRootPart
+    local rootPosition = humanoidRootPart.Position
+    
+    -- Function to get a random position within a 15-stud radius
+    local function getRandomPositionInRadius(center, radius)
+        -- Generate a random angle and distance
+        local angle = math.rad(math.random(0, 360)) -- Random angle in radians
+        local distance = math.random() * radius -- Random distance within the radius
+        
+        -- Calculate the new X and Z offsets
+        local offsetX = math.cos(angle) * distance
+        local offsetZ = math.sin(angle) * distance
+        
+        -- Return the new position with the same Y level as the player
+        return Vector3.new(center.X + offsetX, center.Y, center.Z + offsetZ)
+    end
+
+    -- Loop through all objects inside the WeaponDrops folder
+    for _, weapon in pairs(weaponDropsFolder:GetChildren()) do
+        -- Check if the object is a Model
+        if weapon:IsA("Model") then
+            -- If the model has no PrimaryPart, we set one (assuming it has parts)
+            if not weapon.PrimaryPart then
+                -- Try setting any part inside the model as the PrimaryPart (optional, but recommended)
+                local firstPart = weapon:FindFirstChildWhichIsA("BasePart")
+                if firstPart then
+                    weapon.PrimaryPart = firstPart
+                else
+                    print("No parts found in model:", weapon.Name)
+                    continue -- Skip this model if no parts exist
+                end
+            end
+            
+            -- Generate a random position within the 15-stud radius
+            local randomPosition = getRandomPositionInRadius(rootPosition, 15)
+            
+            -- Teleport the model to the random position
+            weapon:SetPrimaryPartCFrame(CFrame.new(randomPosition))
+            print("Model teleported to random position:", weapon.Name)
+        else
+            print(weapon.Name, "is not a Model, skipping.")
+        end
+    end
+else
+    print("HumanoidRootPart not found!")
+end
