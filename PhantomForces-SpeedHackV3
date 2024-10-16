@@ -1,0 +1,59 @@
+local function applySettingsToHumanoid(humanoid)
+    -- Ensure humanoid exists before applying
+    if humanoid then
+        -- Reapply WalkSpeed and JumpPower based on enabled states
+        humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+            if getgenv().WalkSpeedEnabled then
+                humanoid.WalkSpeed = getgenv().WalkSpeedValue
+            end
+        end)
+        humanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()
+            if getgenv().JumpHeightEnabled then
+                humanoid.JumpPower = getgenv().JumpHeightValue
+            end
+        end)
+
+        -- Set initial values
+        if getgenv().WalkSpeedEnabled then
+            humanoid.WalkSpeed = getgenv().WalkSpeedValue
+        end
+        if getgenv().JumpHeightEnabled then
+            humanoid.JumpPower = getgenv().JumpHeightValue
+        end
+
+        -- Handle humanoid death and respawn
+        handleHumanoidDeath(humanoid)
+    else
+        warn("No humanoid found in the target model")
+    end
+end
+
+-- Function to watch for new models being added to Workspace.Ignore
+local function monitorNewModels()
+    game:GetService("Workspace").Ignore.ChildAdded:Connect(function(child)
+        if child:IsA("Model") then
+            local humanoid = child:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                applySettingsToHumanoid(humanoid)
+            end
+        end
+    end)
+end
+
+-- Function to reapply settings to existing models when script runs
+local function reapplySettingsToExistingModels()
+    for _, model in pairs(game:GetService("Workspace").Ignore:GetChildren()) do
+        if model:IsA("Model") then
+            local humanoid = model:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                applySettingsToHumanoid(humanoid)
+            end
+        end
+    end
+end
+
+-- Monitor new models being added and apply settings
+monitorNewModels()
+
+-- Apply settings to already existing models when the script is first run
+reapplySettingsToExistingModels()
