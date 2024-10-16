@@ -1,5 +1,6 @@
--- Path to the folder containing the weapon drops
+-- Path to the folder containing the weapon drops and interactables
 local weaponDropsFolder = game.Workspace:WaitForChild("WeaponDrops")
+local interactablesFolder = game.Workspace:WaitForChild("Interactables")
 
 -- Get the player and their character's HumanoidRootPart
 local player = game.Players.LocalPlayer -- Make sure this is a LocalScript
@@ -25,32 +26,41 @@ if humanoidRootPart then
         return Vector3.new(center.X + offsetX, center.Y, center.Z + offsetZ)
     end
 
-    -- Loop through all objects inside the WeaponDrops folder
-    for _, weapon in pairs(weaponDropsFolder:GetChildren()) do
-        -- Check if the object is a Model
-        if weapon:IsA("Model") then
-            -- If the model has no PrimaryPart, we set one (assuming it has parts)
-            if not weapon.PrimaryPart then
-                -- Try setting any part inside the model as the PrimaryPart (optional, but recommended)
-                local firstPart = weapon:FindFirstChildWhichIsA("BasePart")
-                if firstPart then
-                    weapon.PrimaryPart = firstPart
-                else
-                    print("No parts found in model:", weapon.Name)
-                    continue -- Skip this model if no parts exist
+    -- Function to teleport models
+    local function teleportModels(modelsFolder, filterByName)
+        -- Loop through all objects inside the folder
+        for _, model in pairs(modelsFolder:GetChildren()) do
+            -- Check if the object is a Model and matches the filter criteria
+            if model:IsA("Model") and (not filterByName or string.find(model.Name, filterByName)) then
+                -- If the model has no PrimaryPart, we set one (assuming it has parts)
+                if not model.PrimaryPart then
+                    -- Try setting any part inside the model as the PrimaryPart (optional, but recommended)
+                    local firstPart = model:FindFirstChildWhichIsA("BasePart")
+                    if firstPart then
+                        model.PrimaryPart = firstPart
+                    else
+                        print("No parts found in model:", model.Name)
+                        continue -- Skip this model if no parts exist
+                    end
                 end
+
+                -- Generate a random position within the 15-stud radius
+                local randomPosition = getRandomPositionInRadius(rootPosition, 15)
+                
+                -- Teleport the model to the random position
+                model:SetPrimaryPartCFrame(CFrame.new(randomPosition))
+                print("Model teleported to random position:", model.Name)
+            else
+                print(model.Name, "does not match criteria, skipping.")
             end
-            
-            -- Generate a random position within the 15-stud radius
-            local randomPosition = getRandomPositionInRadius(rootPosition, 15)
-            
-            -- Teleport the model to the random position
-            weapon:SetPrimaryPartCFrame(CFrame.new(randomPosition))
-            print("Model teleported to random position:", weapon.Name)
-        else
-            print(weapon.Name, "is not a Model, skipping.")
         end
     end
+
+    -- Teleport models from WeaponDrops
+    teleportModels(weaponDropsFolder, nil) -- No filter, teleport all models in WeaponDrops
+    
+    -- Teleport models from Interactables that contain "Ammo" in their name
+    teleportModels(interactablesFolder, "Ammo") -- Only teleport models with "Ammo" in the name
 else
     print("HumanoidRootPart not found!")
 end
