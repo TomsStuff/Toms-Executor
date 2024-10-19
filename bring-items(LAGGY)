@@ -1,0 +1,142 @@
+-- Define the function to create the tool
+function createTool()
+    -- Find the player
+    local player = game.Players.LocalPlayer or game.Players:GetPlayerFromCharacter(script.Parent)
+
+    -- Create a new tool
+    local tool = Instance.new("Tool")
+    tool.Name = "TelekinesisTool"
+    tool.RequiresHandle = true
+
+    -- Create a handle for the tool
+    local handle = Instance.new("Part")
+    handle.Name = "Handle"
+    handle.Size = Vector3.new(1, 1, 1) -- Customize the handle's size
+    handle.Color = Color3.fromRGB(255, 0, 0) -- Customize the handle's color (Red)
+    handle.Anchored = false
+    handle.CanCollide = false
+    handle.Parent = tool -- Attach the handle to the tool
+
+    -- Set the handle as the grip for the tool
+    tool.Grip = CFrame.new()
+
+    -- Parent the tool to the player's backpack
+    tool.Parent = player.Backpack
+
+    -- Variables to store telekinesis state
+    local pickedUpObject = nil
+    local mouse = player:GetMouse()
+    local isTelekineticActive = false
+    local fixedDistance = 10 -- Fixed distance from the player
+    local runService = game:GetService("RunService")
+
+    -- Function to find the main model of a part (to pick up larger objects like models)
+    local function findModel(part)
+        if part:IsA("BasePart") and part.Anchored == false then
+            while part.Parent and not part.Parent:IsA("Workspace") do
+                part = part.Parent
+            end
+            return part
+        end
+        return nil
+    end
+
+    -- Function to pick up a part or model telekinetically
+    local function onActivate()
+        if pickedUpObject == nil then
+            local target = mouse.Target
+            if target then
+                local objectToMove = findModel(target)
+
+                if objectToMove then
+                    pickedUpObject = objectToMove
+
+                    -- Make the model or part movable by adding BodyPosition to all unanchored parts
+                    local allParts = pickedUpObject:GetDescendants()
+                    for _, part in pairs(allParts) do
+                        if part:IsA("BasePart") and not part.Anchored then
+                            -- Add BodyPosition to each part of the model
+                            local bodyPosition = Instance.new("BodyPosition")
+                            bodyPosition.MaxForce = Vector3.new(5000, 5000, 5000) -- Adjust the force for movement
+                            bodyPosition.P = 10000 -- Power of the movement
+                            bodyPosition.D = 500 -- Damping to smooth the motion
+                            bodyPosition.Parent = part
+                        end
+                    end
+
+                    isTelekineticActive = true
+
+                    -- Move the object towards the player's mouse cursor
+                    runService.Stepped:Connect(function()
+                        if pickedUpObject ~= nil and isTelekineticActive then
+                            local targetPosition = player.Character.HumanoidRootPart.Position + 
+                                                  (mouse.Hit.Position - player.Character.HumanoidRootPart.Position).unit * fixedDistance
+                            
+                            -- Apply position to all parts of the model
+                            for _, part in pairs(allParts) do
+                                if part:IsA("BasePart") and not part.Anchored then
+                                    local bodyPosition = part:FindFirstChild("BodyPosition")
+                                    if bodyPosition then
+                                        bodyPosition.Position = targetPosition
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                end
+            end
+        end
+    end
+
+    -- Function to throw the object (F key)
+    local function onThrow()
+        if pickedUpObject ~= nil then
+            -- Remove BodyPosition from all parts to "release" the object
+            for _, part in pairs(pickedUpObject:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    local bodyPosition = part:FindFirstChild("BodyPosition")
+                    if bodyPosition then
+                        bodyPosition:Destroy()
+                    end
+
+                    -- Apply velocity to throw the object in the direction the player is facing
+                    local bodyVelocity = Instance.new("BodyVelocity")
+                    bodyVelocity.Velocity = player.Character.HumanoidRootPart.CFrame.LookVector * 50 -- Adjust throw speed
+                    bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
+                    bodyVelocity.Parent = part
+
+                    -- Remove the BodyVelocity after a short time (cleanup)
+                    game:GetService("Debris"):AddItem(bodyVelocity, 0.5)
+                end
+            end
+
+            -- Clear the picked-up object reference
+            pickedUpObject = nil
+            isTelekineticActive = false
+        end
+    end
+
+    -- Detect tool activation (when clicked)
+    tool.Activated:Connect(onActivate)
+
+    -- Detect keyboard input for telekinesis controls
+    local userInputService = game:GetService("UserInputService")
+    userInputService.InputBegan:Connect(function(input)
+        if input.KeyCode == Enum.KeyCode.F then
+            onThrow()
+        elseif input.KeyCode == Enum.KeyCode.Q then
+            if pickedUpObject then
+                -- Bring the object closer (minimum distance of 1 stud)
+                fixedDistance = math.max(1, fixedDistance - 1)
+            end
+        elseif input.KeyCode == Enum.KeyCode.E then
+            if pickedUpObject then
+                -- Push the object further away
+                fixedDistance = fixedDistance + 1
+            end
+        end
+    end)
+end
+
+-- Call the function to create the tool
+createTool()
