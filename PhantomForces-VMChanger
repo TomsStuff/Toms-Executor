@@ -1,0 +1,53 @@
+local camera = game:GetService("Workspace").Camera
+local speed = 12 -- Speed for the rainbow effect
+local updateInterval = 0.05 -- Interval for color updates
+
+-- Iterate through all children of the Camera that are models
+for _, model in ipairs(camera:GetChildren()) do
+    -- Check if the child is a model
+    if model:IsA("Model") then
+        -- Find the part named "Arm" within the model
+        local armPart = model:FindFirstChild("Arm")
+
+        -- Only proceed if "Arm" exists and is a BasePart
+        if armPart and armPart:IsA("BasePart") then
+            -- Delete any part or mesh part named "Sleeves" within the model
+            local sleevesPart = model:FindFirstChild("Sleeves")
+            if sleevesPart then
+                sleevesPart:Destroy()
+            end
+
+            -- Function to update the color for each part in the model
+            local function updateRainbowColor(part)
+                local hue = math.random(0, 360) -- Random starting hue for each part
+                while true do
+                    hue = (hue + speed) % 360
+                    local color = Color3.fromHSV(hue / 360, 1, 1)
+
+                    -- Remove any Texture objects within the part
+                    for _, child in ipairs(part:GetChildren()) do
+                        if child:IsA("Texture") then
+                            child:Destroy()
+                        end
+                    end
+
+                    -- Apply transparency and color to the part
+                    part.Transparency = 0.5
+                    part.Color = color
+
+                    task.wait(updateInterval) -- Adjust this to change update frequency
+                end
+            end
+
+            -- Iterate through all parts within the model
+            for _, part in ipairs(model:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    -- Start a loop for each part to update its color independently
+                    spawn(function()
+                        updateRainbowColor(part)
+                    end)
+                end
+            end
+        end
+    end
+end
