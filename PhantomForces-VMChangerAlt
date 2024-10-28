@@ -1,0 +1,58 @@
+local camera = game:GetService("Workspace").Camera
+local speed = 12 -- Speed for the rainbow effect
+local updateInterval = 0.05 -- Interval for color updates
+
+-- Function to get a random starting hue
+local function getRandomHue()
+    return math.random(0, 360)
+end
+
+-- Iterate through all children of the Camera that are models
+for _, model in ipairs(camera:GetChildren()) do
+    -- Check if the child is a model
+    if model:IsA("Model") then
+        -- Find the part named "Arm" within the model
+        local armPart = model:FindFirstChild("Arm")
+
+        -- Only proceed if "Arm" exists and is a BasePart
+        if armPart and armPart:IsA("BasePart") then
+            -- Rainbow effect variables
+            local hue = getRandomHue() -- Set a random starting hue for this model
+
+            -- Function to update the color for each part in the model
+            local function updateRainbowColor()
+                hue = (hue + speed) % 360
+                local color = Color3.fromHSV(hue / 360, 1, 1)
+
+                -- Apply transparency and color to all parts within the model
+                for _, part in ipairs(model:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        -- Check for "Sleeves" and destroy it if found
+                        if part.Name == "Sleeves" then
+                            part:Destroy()
+                        else
+                            -- Remove any Texture objects within the part
+                            for _, child in ipairs(part:GetChildren()) do
+                                if child:IsA("Texture") then
+                                    child:Destroy()
+                                end
+                            end
+
+                            -- Apply transparency and color
+                            part.Transparency = 0.5
+                            part.Color = color
+                        end
+                    end
+                end
+            end
+
+            -- Start a loop to continuously update the color for each part
+            spawn(function()
+                while true do
+                    updateRainbowColor()
+                    task.wait(updateInterval) -- Adjust this to change update frequency
+                end
+            end)
+        end
+    end
+end
