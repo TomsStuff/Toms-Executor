@@ -75,7 +75,7 @@ local function onPlayerSpawn(player)
         -- Wait 1 second after the character has been added
         wait(1)
         -- Call the function to update Ammo values
-        updateAmmoValues(600) -- Replace 600 with the desired Ammo value that you want to set
+        updateAmmoValues(9999) -- Replace 600 with the desired Ammo value that you want to set
     end)
 
     -- Find the ScoreFolder in the player's PlayerGui
@@ -89,7 +89,7 @@ local function onPlayerSpawn(player)
                 -- Connect a function to the Kills IntValue's Changed event
                 killsValue.Changed:Connect(function(newValue)
                     print("Kills value changed to: " .. tostring(newValue))
-                    updateAmmoValues(600) -- Replace 600 with the desired Ammo value that you want to set
+                    updateAmmoValues(9999) -- Replace 600 with the desired Ammo value that you want to set
                 end)
             else
                 warn("Kills IntValue not found in ScoreFolder")
@@ -111,4 +111,4 @@ for _, player in pairs(Players:GetPlayers()) do
 end
 
 -- Run the updateAmmoValues function immediately when the script is executed
-updateAmmoValues(600) -- Replace 600 with the desired Ammo value that you want to set
+updateAmmoValues(9999) -- Replace 600 with the desired Ammo value that you want to set
