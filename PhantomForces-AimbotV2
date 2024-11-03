@@ -1,0 +1,138 @@
+--// Services
+local run_service = game:GetService("RunService")
+local players = game:GetService("Players")
+local teams = game:GetService("Teams")
+local user_input_service = game:GetService("UserInputService")
+local camera = workspace.CurrentCamera
+
+--// Vars
+local localPlayer = players.LocalPlayer
+local isRightClickHeld = false
+local targetPart = nil -- The part to aim at
+local features = {
+    chams = {teamcheck = true} -- Enable teamcheck for aimbot
+}
+
+--// Functions
+
+-- Get all player models in the workspace
+function get_players()
+    local entity_list = {}
+    for _, teams in workspace.Players:GetChildren() do
+        for _, player in teams:GetChildren() do
+            if player:IsA("Model") then
+                entity_list[#entity_list+1] = player
+            end
+        end
+    end
+    return entity_list
+end
+
+-- Function to check if the player is an ally
+function is_ally(player)
+    if not player then return end
+
+    local helmet = player:FindFirstChildWhichIsA("Folder"):FindFirstChildOfClass("MeshPart")
+    if not helmet then return end
+
+    if helmet.BrickColor == BrickColor.new("Black") then
+        return teams.Phantoms == players.LocalPlayer.Team, teams.Phantoms
+    end
+
+    return teams.Ghosts == players.LocalPlayer.Team, teams.Ghosts
+end
+
+-- Find the closest part with a specific decal to the screen center
+local function getClosestPartToCenter()
+    local closestPart = nil
+    local shortestDistance = math.huge
+    local screenCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+
+    for _, player in ipairs(get_players()) do
+        local is_ally_player, _ = is_ally(player)
+
+        -- Skip if the player is an ally and teamcheck is enabled
+        if features.chams.teamcheck and is_ally_player then
+            continue
+        end
+
+        local has_decals = false
+
+        -- Traverse through player parts and find Decals
+        for _, child in ipairs(player:GetChildren()) do
+            if child:IsA("Part") then
+                for _, decal in ipairs(child:GetChildren()) do
+                    if decal:IsA("Decal") and decal.Texture == "rbxassetid://5196259061" then
+                        has_decals = true
+                        -- Get the part's position on the screen
+                        local partPosition, onScreen = camera:WorldToViewportPoint(child.Position)
+                        if onScreen then
+                            local screenPosition = Vector2.new(partPosition.X, partPosition.Y)
+                            local distance = (screenPosition - screenCenter).Magnitude
+                            
+                            if distance < shortestDistance then
+                                closestPart = child
+                                shortestDistance = distance
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        if not has_decals then
+            print("No parts with the matching Decal ID found for:", player.Name)
+        end
+    end
+
+    return closestPart
+end
+
+-- Function to aim at the closest part using interpolation
+local function aimAtTarget()
+    if targetPart then
+        -- Get the part's position on the screen
+        local partPosition, onScreen = camera:WorldToViewportPoint(targetPart.Position)
+
+        if onScreen then
+            -- Get current mouse position
+            local mouseLocation = user_input_service:GetMouseLocation()
+
+            -- Calculate the target position for mouse movement
+            local targetMousePosition = Vector2.new(partPosition.X, partPosition.Y)
+
+            -- Interpolate between the current mouse position and the target position
+            local interpolationFactor = 1 -- Adjust to control the speed
+            local newMouseX = mouseLocation.X + (targetMousePosition.X - mouseLocation.X) * interpolationFactor
+            local newMouseY = mouseLocation.Y + (targetMousePosition.Y - mouseLocation.Y) * interpolationFactor
+
+            -- Move the mouse relative to the new position
+            local deltaX = newMouseX - mouseLocation.X
+            local deltaY = newMouseY - mouseLocation.Y
+            getfenv().mousemoverel(deltaX, deltaY)
+        end
+    end
+end
+
+-- Event to start aiming when right mouse button is pressed
+user_input_service.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        isRightClickHeld = true
+        targetPart = getClosestPartToCenter() -- Find the closest part with the matching decal
+    end
+end)
+
+-- Event to stop aiming when right mouse button is released
+user_input_service.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        isRightClickHeld = false
+        targetPart = nil
+    end
+end)
+
+-- Main loop to continuously aim at the target while the right mouse button is held down
+run_service.RenderStepped:Connect(function()
+    if isRightClickHeld and targetPart then
+        aimAtTarget() -- Call the aim function
+    end
+end)
