@@ -95,18 +95,12 @@ local function aimAtTarget()
         local partPosition, onScreen = camera:WorldToViewportPoint(targetPart.Position)
 
         if onScreen then
-            -- Get current mouse position
-            local mouseLocation = user_input_service:GetMouseLocation()
-
-            -- Calculate the target position for mouse movement
+           local mouseLocation = user_input_service:GetMouseLocation()
             local targetMousePosition = Vector2.new(partPosition.X, partPosition.Y)
-
-            -- Interpolate between the current mouse position and the target position
             local interpolationFactor = 1 -- Adjust to control the speed
             local newMouseX = mouseLocation.X + (targetMousePosition.X - mouseLocation.X) * interpolationFactor
             local newMouseY = mouseLocation.Y + (targetMousePosition.Y - mouseLocation.Y) * interpolationFactor
 
-            -- Move the mouse relative to the new position
             local deltaX = newMouseX - mouseLocation.X
             local deltaY = newMouseY - mouseLocation.Y
             getfenv().mousemoverel(deltaX, deltaY)
