@@ -85,7 +85,7 @@ end)
 
 -- Event to stop aiming when right mouse button is released
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+    if input.UserInputType == Enum.UserInputType.MouseButton3 then
         isRightClickHeld = false
         targetPlayer = nil
     end
