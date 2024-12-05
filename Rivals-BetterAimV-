@@ -77,7 +77,7 @@ end
 
 -- Event to start aiming when right mouse button is pressed
 UserInputService.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+    if input.UserInputType == Enum.UserInputType.MouseButton3 then
         isRightClickHeld = true
         targetPlayer = getClosestPlayerToCenter()
     end
