@@ -7,5 +7,5 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Duration = 5,  -- Notification will be displayed for 5 seconds
     Button1 = "OK"
 })
-loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-BetterAimV3'))()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-WnT"))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-BetterAimV-'))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/TomsStuff/Toms-Executor/main/Rivals-VnT"))()
