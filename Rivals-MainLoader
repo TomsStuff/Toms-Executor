@@ -3,7 +3,7 @@
 
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Tom's Rivals ESP + Aimbot",
-    Text = "Successfully Loaded!",
+    Text = "Hi Robin i know you see this :3",
     Duration = 5,  -- Notification will be displayed for 5 seconds
     Button1 = "OK"
 })
